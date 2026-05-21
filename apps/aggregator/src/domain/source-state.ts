@@ -1,3 +1,5 @@
+import { computeFreshness } from '@price-oracle/contracts/aggregation';
+
 import type { SourceState, Thresholds, Tick } from './types.js';
 import type { Millis, SourceHealth } from '@price-oracle/contracts/primitives';
 
@@ -38,4 +40,9 @@ export function updateSourceState(
   }
 
   return { ...prev, lastTickAt, lastPrice, pendingHealth: candidate, pendingStreak };
+}
+
+export function perSourceHealthScore(state: SourceState, now: Millis, cfg: Thresholds): number {
+  if (state.health === 'STALE' || state.lastTickAt === null) return 0;
+  return computeFreshness(now, state.lastTickAt, cfg.freshnessDecayMs);
 }

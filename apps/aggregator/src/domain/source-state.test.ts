@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { updateSourceState } from './source-state.js';
+import { perSourceHealthScore, updateSourceState } from './source-state.js';
 
 import type { SourceState, Thresholds, Tick } from './types.js';
 
@@ -111,5 +111,31 @@ describe('updateSourceState', () => {
     const snapshot = { ...prev };
     updateSourceState(prev, null, 3_000, cfg);
     expect(prev).toEqual(snapshot);
+  });
+});
+
+describe('perSourceHealthScore', () => {
+  it('should return 0 for a STALE source', () => {
+    expect(perSourceHealthScore(makeState({ health: 'STALE', lastTickAt: 1_000 }), 2_000, cfg)).toBe(
+      0,
+    );
+  });
+
+  it('should return 0 for a never-seen source', () => {
+    expect(
+      perSourceHealthScore(makeState({ health: 'HEALTHY', lastTickAt: null }), 2_000, cfg),
+    ).toBe(0);
+  });
+
+  it('should return the freshness score for a HEALTHY source', () => {
+    expect(
+      perSourceHealthScore(makeState({ health: 'HEALTHY', lastTickAt: 0 }), 2_000, cfg),
+    ).toBeCloseTo(0.8);
+  });
+
+  it('should down-weight a DEGRADED source via its lower freshness', () => {
+    expect(
+      perSourceHealthScore(makeState({ health: 'DEGRADED', lastTickAt: 0 }), 3_000, cfg),
+    ).toBeCloseTo(0.7);
   });
 });
