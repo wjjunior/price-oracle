@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { TickSchema } from '@price-oracle/contracts/events';
 import { type AssetId, type Millis, type Price } from '@price-oracle/contracts/primitives';
 import { ticksSubject } from '@price-oracle/contracts/subjects';
@@ -12,6 +12,8 @@ import { NatsService } from '../nats/nats.service.js';
 import { ChaosMode } from './chaos-mode.js';
 import { ChaosStateService } from './chaos-state.service.js';
 import { nextPrice } from './random-walk.js';
+
+import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 
 const ASSETS: readonly AssetId[] = ['btc', 'eth'];
 const MOCK_SOURCE = 'mock' as const;
