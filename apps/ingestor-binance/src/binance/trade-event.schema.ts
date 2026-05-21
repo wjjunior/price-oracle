@@ -1,8 +1,10 @@
 import { z } from 'zod';
 
-const FiniteNumericString = z.string().refine((v) => Number.isFinite(Number(v)), {
-  message: 'must parse as a finite number',
-});
+const FiniteNumericString = z
+  .string()
+  .refine((v) => v.trim() !== '' && Number.isFinite(Number(v)), {
+    message: 'must be a non-empty string that parses as a finite number',
+  });
 
 export const BinanceTradeEventSchema = z.object({
   e: z.literal('trade'),

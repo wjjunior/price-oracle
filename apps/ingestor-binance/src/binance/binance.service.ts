@@ -109,8 +109,13 @@ export class BinanceService implements OnModuleInit, OnModuleDestroy {
 
   private scheduleReconnect(): void {
     if (this.reconnectTimer) return;
-    const delay = nextDelayMs(this.attempt);
+    if (this.ws) {
+      this.ws.removeAllListeners();
+      this.ws.terminate();
+      this.ws = undefined;
+    }
     this.attempt += 1;
+    const delay = nextDelayMs(this.attempt - 1);
     this.logger.info(
       {
         event: 'ws.reconnect.scheduled',
@@ -162,12 +167,16 @@ export class BinanceService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    const { stream, data } = result.data;
-    const symbolPart = stream.split('@')[0];
-    const asset = symbolPart ? assetFromBinanceSymbol(symbolPart) : undefined;
+    const { data } = result.data;
+    const asset = assetFromBinanceSymbol(data.s);
     if (!asset) {
       this.logger.warn(
-        { event: 'ws.frame.unknown_symbol', sourceId: BINANCE_SOURCE, correlationId, stream },
+        {
+          event: 'ws.frame.unknown_symbol',
+          sourceId: BINANCE_SOURCE,
+          correlationId,
+          symbol: data.s,
+        },
         'Binance frame carries an unknown symbol',
       );
       return;

@@ -11,6 +11,10 @@ import type { z } from 'zod';
 
 export const CORRELATION_HEADER = 'correlation-id';
 
+function redactUrl(url: string): string {
+  return url.replace(/\/\/[^@/]+@/, '//***@');
+}
+
 @Injectable()
 export class NatsService implements OnModuleInit, OnModuleDestroy {
   private readonly encoder = new TextEncoder();
@@ -25,7 +29,10 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit(): Promise<void> {
     this.connection = await connect({ servers: this.config.natsUrl });
-    this.logger.info({ event: 'nats.connect', url: this.config.natsUrl }, 'NATS connected');
+    this.logger.info(
+      { event: 'nats.connect', url: redactUrl(this.config.natsUrl) },
+      'NATS connected',
+    );
   }
 
   async onModuleDestroy(): Promise<void> {
@@ -40,7 +47,14 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
     payload: z.input<S>,
     correlationId: string,
   ): void {
-    const validated = schema.parse(payload);
+    const result = schema.safeParse(payload);
+    if (!result.success) {
+      this.logger.warn(
+        { event: 'nats.publish.invalid', subject, correlationId, issues: result.error.issues },
+        'Refusing to publish a payload that failed contract validation',
+      );
+      return;
+    }
     const connection = this.connection;
     if (!connection) {
       this.logger.warn(
@@ -52,7 +66,7 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
     const h = headers();
     h.append(CORRELATION_HEADER, correlationId);
     try {
-      connection.publish(subject, this.encoder.encode(JSON.stringify(validated)), { headers: h });
+      connection.publish(subject, this.encoder.encode(JSON.stringify(result.data)), { headers: h });
     } catch (err) {
       this.logger.warn(
         {
