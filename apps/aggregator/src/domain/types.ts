@@ -3,13 +3,15 @@ import type {
   SourceState as SourceStateContract,
   Tick as TickContract,
 } from '@price-oracle/contracts/events';
-import type { Confidence, Millis } from '@price-oracle/contracts/primitives';
+import type { Confidence, Millis, SourceId } from '@price-oracle/contracts/primitives';
 
 export type { BreakerState } from '@price-oracle/contracts/primitives';
 
 export type Tick = Readonly<TickContract>;
 export type SourceState = Readonly<SourceStateContract>;
-export type AggregatePrice = Readonly<AggregatePriceContract>;
+export type AggregatePrice = Readonly<Omit<AggregatePriceContract, 'contributingSources'>> & {
+  readonly contributingSources: readonly SourceId[];
+};
 
 export type Thresholds = {
   readonly freshnessDecayMs: Millis;

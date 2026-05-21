@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest';
 
 import type { AggregatePrice, AnomalyConfig, BreakerConfig, SourceState, Thresholds, Tick } from './types.js';
-import type { AssetId } from '@price-oracle/contracts/primitives';
+import type { AssetId, SourceId } from '@price-oracle/contracts/primitives';
 
 describe('domain value objects', () => {
   it('should carry asset as a first-class AssetId field on SourceState', () => {
@@ -20,8 +20,14 @@ describe('domain value objects', () => {
     expectTypeOf<SourceState>().toEqualTypeOf<Readonly<SourceState>>();
   });
 
-  it('should expose every AggregatePrice field as readonly', () => {
-    expectTypeOf<AggregatePrice>().toEqualTypeOf<Readonly<AggregatePrice>>();
+  it('should expose every scalar AggregatePrice field as readonly', () => {
+    expectTypeOf<Omit<AggregatePrice, 'contributingSources'>>().toEqualTypeOf<
+      Readonly<Omit<AggregatePrice, 'contributingSources'>>
+    >();
+  });
+
+  it('should model contributingSources as a readonly array, not just a readonly field', () => {
+    expectTypeOf<AggregatePrice['contributingSources']>().toEqualTypeOf<readonly SourceId[]>();
   });
 });
 
