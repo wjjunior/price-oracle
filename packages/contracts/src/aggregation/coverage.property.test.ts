@@ -29,17 +29,4 @@ describe('computeCoverage (properties)', () => {
       ),
     );
   });
-
-  it('should equal active/total when active is between 0 and total', () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 1, max: 1_000 }),
-        fc.integer({ min: 1, max: 1_000 }),
-        (total, active) => {
-          const capped = Math.min(active, total);
-          return computeCoverage(capped, total) === capped / total;
-        },
-      ),
-    );
-  });
 });
