@@ -33,3 +33,7 @@ coverage/
 
 # Internal planning documents (not committed)
 PARALLEL_EXECUTION.md
+
+# Local process docs (brainstorming specs, implementation plans);
+# kept on disk for reference but never committed.
+docs/superpowers/

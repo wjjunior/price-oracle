@@ -1,0 +1,30 @@
+{
+  "name": "@price-oracle/ingestor-binance",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@nats-io/nats-core": "^3.0.0",
+    "@nats-io/transport-node": "^3.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@price-oracle/contracts": "workspace:*",
+    "nestjs-pino": "^4.4.0",
+    "pino": "^9.5.0",
+    "reflect-metadata": "^0.2.2",
+    "ws": "^8.18.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8.5.13",
+    "tsx": "^4.20.0",
+    "vitest": "^4.1.6"
+  }
+}
