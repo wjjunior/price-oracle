@@ -18,8 +18,8 @@ export function updateSourceState(
   now: Millis,
   cfg: Thresholds,
 ): SourceState {
-  const lastTickAt = tick !== null ? tick.receivedAt : prev.lastTickAt;
-  const lastPrice = tick !== null ? tick.price : prev.lastPrice;
+  const lastTickAt = tick ? tick.receivedAt : prev.lastTickAt;
+  const lastPrice = tick ? tick.price : prev.lastPrice;
   const candidate = classifyHealth(lastTickAt, now, cfg);
 
   if (candidate === prev.health) {
