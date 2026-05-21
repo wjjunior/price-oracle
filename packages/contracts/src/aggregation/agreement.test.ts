@@ -19,7 +19,11 @@ describe('computeAgreement', () => {
     expect(computeAgreement([99, 101])).toBeCloseTo(0.99, 4);
   });
 
-  it('should clamp to 0 once dispersion reaches the mean', () => {
+  it('should track 1 - coefficient of variation for moderate dispersion', () => {
     expect(computeAgreement([50, 150])).toBeCloseTo(0.5, 4);
+  });
+
+  it('should clamp to 0 when dispersion exceeds the mean', () => {
+    expect(computeAgreement([1, 1, 100])).toBe(0);
   });
 });
