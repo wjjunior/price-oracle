@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@price-oracle/contracts/aggregation": ["../../packages/contracts/src/aggregation/index.ts"],
+      "@price-oracle/contracts/events": ["../../packages/contracts/src/events/index.ts"],
+      "@price-oracle/contracts/primitives": ["../../packages/contracts/src/primitives.ts"],
+      "@price-oracle/contracts/rest": ["../../packages/contracts/src/rest/index.ts"],
+      "@price-oracle/contracts/sse": ["../../packages/contracts/src/sse/envelope.ts"],
+      "@price-oracle/contracts/subjects": ["../../packages/contracts/src/subjects.ts"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}
