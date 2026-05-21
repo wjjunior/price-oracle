@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
 
-import type { AggregatePrice, SourceState, Thresholds, Tick } from './types.js';
+import type { AggregatePrice, AnomalyConfig, BreakerConfig, SourceState, Thresholds, Tick } from './types.js';
 import type { AssetId } from '@price-oracle/contracts/primitives';
 
 describe('domain value objects', () => {
@@ -12,48 +12,29 @@ describe('domain value objects', () => {
     expectTypeOf<AggregatePrice>().toHaveProperty('asset').toEqualTypeOf<AssetId>();
   });
 
-  it('should reject mutation of a Tick field', () => {
-    const tick: Tick = { asset: 'btc', source: 'binance', price: 1, receivedAt: 0 };
-    // @ts-expect-error price is readonly on the domain value object
-    tick.price = 2;
+  it('should expose every Tick field as readonly', () => {
+    expectTypeOf<Tick>().toEqualTypeOf<Readonly<Tick>>();
   });
 
-  it('should reject mutation of a SourceState field', () => {
-    const state: SourceState = {
-      asset: 'btc',
-      source: 'binance',
-      health: 'HEALTHY',
-      lastTickAt: 0,
-      lastPrice: 1,
-      pendingHealth: null,
-      pendingStreak: 0,
-    };
-    // @ts-expect-error health is readonly on the domain value object
-    state.health = 'STALE';
+  it('should expose every SourceState field as readonly', () => {
+    expectTypeOf<SourceState>().toEqualTypeOf<Readonly<SourceState>>();
   });
 
-  it('should reject mutation of an AggregatePrice field', () => {
-    const aggregate: AggregatePrice = {
-      asset: 'btc',
-      price: 1,
-      confidence: 1,
-      contributingSources: ['binance'],
-      computedAt: 0,
-    };
-    // @ts-expect-error price is readonly on the domain value object
-    aggregate.price = 2;
+  it('should expose every AggregatePrice field as readonly', () => {
+    expectTypeOf<AggregatePrice>().toEqualTypeOf<Readonly<AggregatePrice>>();
   });
 });
 
 describe('domain config objects', () => {
-  it('should reject mutation of a Thresholds field', () => {
-    const thresholds: Thresholds = {
-      freshnessDecayMs: 5_000,
-      degradedAfterMs: 2_000,
-      staleAfterMs: 8_000,
-      healthHysteresisStreak: 3,
-    };
-    // @ts-expect-error freshnessDecayMs is readonly on the config object
-    thresholds.freshnessDecayMs = 1_000;
+  it('should expose every Thresholds field as readonly', () => {
+    expectTypeOf<Thresholds>().toEqualTypeOf<Readonly<Thresholds>>();
+  });
+
+  it('should expose every BreakerConfig field as readonly', () => {
+    expectTypeOf<BreakerConfig>().toEqualTypeOf<Readonly<BreakerConfig>>();
+  });
+
+  it('should expose every AnomalyConfig field as readonly', () => {
+    expectTypeOf<AnomalyConfig>().toEqualTypeOf<Readonly<AnomalyConfig>>();
   });
 });
