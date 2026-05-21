@@ -11,37 +11,33 @@ import { SseEnvelopeSchema } from './envelope.js';
 const CORRELATION_ID = 'corr-abc-123';
 
 describe('SseEnvelopeSchema', () => {
-  it('accepts an aggregate envelope with asset and correlationId', () => {
-    const envelope = {
-      type: 'aggregate' as const,
-      asset: 'btc' as const,
-      data: validAggregatePrice(),
-      correlationId: CORRELATION_ID,
-    };
-    expect(SseEnvelopeSchema.parse(envelope)).toEqual(envelope);
+  it('should accept every asset-bearing variant (aggregate, source-health, breaker-state)', () => {
+    const envelopes = [
+      {
+        type: 'aggregate' as const,
+        asset: 'btc' as const,
+        data: validAggregatePrice(),
+        correlationId: CORRELATION_ID,
+      },
+      {
+        type: 'source-health' as const,
+        asset: 'btc' as const,
+        data: validSourceState(),
+        correlationId: CORRELATION_ID,
+      },
+      {
+        type: 'breaker-state' as const,
+        asset: 'eth' as const,
+        data: 'OPEN' as const,
+        correlationId: CORRELATION_ID,
+      },
+    ];
+    for (const e of envelopes) {
+      expect(SseEnvelopeSchema.parse(e)).toEqual(e);
+    }
   });
 
-  it('accepts a source-health envelope carrying SourceState', () => {
-    const envelope = {
-      type: 'source-health' as const,
-      asset: 'btc' as const,
-      data: validSourceState(),
-      correlationId: CORRELATION_ID,
-    };
-    expect(SseEnvelopeSchema.parse(envelope)).toEqual(envelope);
-  });
-
-  it('accepts a breaker-state envelope carrying just the enum value', () => {
-    const envelope = {
-      type: 'breaker-state' as const,
-      asset: 'eth' as const,
-      data: 'OPEN' as const,
-      correlationId: CORRELATION_ID,
-    };
-    expect(SseEnvelopeSchema.parse(envelope)).toEqual(envelope);
-  });
-
-  it('accepts an audit envelope (no asset at the top level — it lives on the audit event)', () => {
+  it('should accept the audit variant without a top-level asset (asset lives on the inner event)', () => {
     const envelope = {
       type: 'audit' as const,
       data: validSourceStateChanged(),
@@ -50,7 +46,7 @@ describe('SseEnvelopeSchema', () => {
     expect(SseEnvelopeSchema.parse(envelope)).toEqual(envelope);
   });
 
-  it('rejects an envelope missing correlationId', () => {
+  it('should reject an envelope missing correlationId', () => {
     expect(
       SseEnvelopeSchema.safeParse({
         type: 'aggregate',
@@ -60,7 +56,7 @@ describe('SseEnvelopeSchema', () => {
     ).toBe(false);
   });
 
-  it('rejects an unknown discriminator value', () => {
+  it('should reject an unknown discriminator value', () => {
     expect(
       SseEnvelopeSchema.safeParse({
         type: 'tick',
@@ -71,7 +67,7 @@ describe('SseEnvelopeSchema', () => {
     ).toBe(false);
   });
 
-  it('rejects a non-audit variant missing the top-level asset', () => {
+  it('should reject a non-audit variant missing the top-level asset', () => {
     expect(
       SseEnvelopeSchema.safeParse({
         type: 'aggregate',
@@ -81,7 +77,7 @@ describe('SseEnvelopeSchema', () => {
     ).toBe(false);
   });
 
-  it('rejects data mismatched against the discriminator', () => {
+  it('should reject data mismatched against the discriminator', () => {
     expect(
       SseEnvelopeSchema.safeParse({
         type: 'aggregate',
@@ -92,7 +88,7 @@ describe('SseEnvelopeSchema', () => {
     ).toBe(false);
   });
 
-  it('rejects extra fields at the envelope level (strict)', () => {
+  it('should reject extra fields at the envelope level (strict mode)', () => {
     expect(
       SseEnvelopeSchema.safeParse({
         type: 'aggregate',

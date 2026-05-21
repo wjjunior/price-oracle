@@ -11,45 +11,33 @@ import {
 import { AuditEventSchema } from './audit-event.js';
 
 describe('AuditEventSchema', () => {
-  it('accepts a SourceStateChanged event', () => {
-    const event = validSourceStateChanged();
-    expect(AuditEventSchema.parse(event)).toEqual(event);
+  it('should accept every audit event variant (DiagnoseAnswered exercising optional tokensUsed)', () => {
+    const events = [
+      validSourceStateChanged(),
+      validBreakerStateChanged(),
+      validAnomalyDetected(),
+      validDiagnoseRequested(),
+      validDiagnoseAnswered({ tokensUsed: 420 }),
+    ];
+    for (const event of events) {
+      expect(AuditEventSchema.parse(event)).toEqual(event);
+    }
   });
 
-  it('accepts a BreakerStateChanged event', () => {
-    const event = validBreakerStateChanged();
-    expect(AuditEventSchema.parse(event)).toEqual(event);
-  });
-
-  it('accepts an AnomalyDetected event', () => {
-    const event = validAnomalyDetected();
-    expect(AuditEventSchema.parse(event)).toEqual(event);
-  });
-
-  it('accepts a DiagnoseRequested event', () => {
-    const event = validDiagnoseRequested();
-    expect(AuditEventSchema.parse(event)).toEqual(event);
-  });
-
-  it('accepts a DiagnoseAnswered event with optional tokensUsed', () => {
-    const event = validDiagnoseAnswered({ tokensUsed: 420 });
-    expect(AuditEventSchema.parse(event)).toEqual(event);
-  });
-
-  it('rejects an unknown type discriminator', () => {
+  it('should reject an unknown type discriminator', () => {
     expect(
       AuditEventSchema.safeParse({ ...validSourceStateChanged(), type: 'AggregatePublished' })
         .success,
     ).toBe(false);
   });
 
-  it('rejects data that does not match the discriminator', () => {
+  it('should reject data that does not match its discriminator', () => {
     const sourceShape = validSourceStateChanged();
     const mismatched = { ...sourceShape, type: 'BreakerStateChanged' as const };
     expect(AuditEventSchema.safeParse(mismatched).success).toBe(false);
   });
 
-  it('rejects extra fields (strict mode)', () => {
+  it('should reject extra fields (strict mode)', () => {
     expect(
       AuditEventSchema.safeParse({ ...validBreakerStateChanged(), extra: 'nope' }).success,
     ).toBe(false);

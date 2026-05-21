@@ -8,7 +8,7 @@ import {
 } from './subjects.js';
 
 describe('ticksSubject', () => {
-  it('builds ticks.<asset>.<source>', () => {
+  it('should build ticks.<asset>.<source>', () => {
     expect(ticksSubject('btc', 'binance')).toBe('ticks.btc.binance');
     expect(ticksSubject('eth', 'coinbase')).toBe('ticks.eth.coinbase');
     expect(ticksSubject('btc', 'mock')).toBe('ticks.btc.mock');
@@ -16,17 +16,17 @@ describe('ticksSubject', () => {
 });
 
 describe('aggregatesSubject', () => {
-  it('builds aggregates.<asset>', () => {
+  it('should build aggregates.<asset>', () => {
     expect(aggregatesSubject('btc')).toBe('aggregates.btc');
     expect(aggregatesSubject('eth')).toBe('aggregates.eth');
   });
 });
 
 describe('subscription patterns', () => {
-  it('exposes ticks.> for the aggregator-side wildcard subscription', () => {
+  it('should expose the ticks.> wildcard for the aggregator', () => {
     expect(TICKS_SUBSCRIPTION_PATTERN).toBe('ticks.>');
   });
-  it('exposes aggregates.> for downstream consumers', () => {
+  it('should expose the aggregates.> wildcard for downstream consumers', () => {
     expect(AGGREGATES_SUBSCRIPTION_PATTERN).toBe('aggregates.>');
   });
 });

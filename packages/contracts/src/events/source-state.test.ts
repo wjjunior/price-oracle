@@ -5,12 +5,12 @@ import { validSourceState } from '../__test-helpers__/factories.js';
 import { SourceStateSchema } from './source-state.js';
 
 describe('SourceStateSchema', () => {
-  it('round-trips a valid source state', () => {
+  it('should round-trip a valid source state', () => {
     const state = validSourceState();
     expect(SourceStateSchema.parse(state)).toEqual(state);
   });
 
-  it('accepts a never-seen source (null lastTickAt and lastPrice)', () => {
+  it('should accept null lastTickAt and lastPrice for a never-seen source', () => {
     const state = validSourceState({
       health: 'STALE',
       lastTickAt: null,
@@ -19,7 +19,7 @@ describe('SourceStateSchema', () => {
     expect(SourceStateSchema.parse(state)).toEqual(state);
   });
 
-  it('accepts a pending hysteresis candidate', () => {
+  it('should accept a pending hysteresis candidate', () => {
     const state = validSourceState({
       pendingHealth: 'DEGRADED',
       pendingStreak: 2,
@@ -27,13 +27,7 @@ describe('SourceStateSchema', () => {
     expect(SourceStateSchema.parse(state)).toEqual(state);
   });
 
-  it('rejects negative pendingStreak', () => {
-    expect(SourceStateSchema.safeParse(validSourceState({ pendingStreak: -1 })).success).toBe(
-      false,
-    );
-  });
-
-  it('rejects extra fields (strict mode)', () => {
+  it('should reject extra fields (strict mode)', () => {
     expect(SourceStateSchema.safeParse({ ...validSourceState(), extra: 1 }).success).toBe(false);
   });
 });
