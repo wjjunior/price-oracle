@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Param, Post } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Inject, Param, Post } from '@nestjs/common';
 import { type AssetId, type Millis } from '@price-oracle/contracts/primitives';
 
 import { INGESTOR_CONFIG, type IngestorConfig } from '../config/env.schema.js';
@@ -34,12 +34,14 @@ export class AdminController {
   ) {}
 
   @Post(':asset/disconnect')
+  @HttpCode(HttpStatus.OK)
   disconnect(@Param('asset', AssetParamPipe) asset: AssetId): AssetStateResponse {
     this.chaos.setDisconnected(asset, Date.now());
     return describe(asset, this.chaos.get(asset));
   }
 
   @Post(':asset/stale')
+  @HttpCode(HttpStatus.OK)
   stale(@Param('asset', AssetParamPipe) asset: AssetId): AssetStateResponse {
     const last = this.generator.lastPublished(asset);
     const now = Date.now();
@@ -52,18 +54,21 @@ export class AdminController {
   }
 
   @Post(':asset/malformed')
+  @HttpCode(HttpStatus.OK)
   malformed(@Param('asset', AssetParamPipe) asset: AssetId): AssetStateResponse {
     this.chaos.setMalformed(asset, Date.now());
     return describe(asset, this.chaos.get(asset));
   }
 
   @Post(':asset/reset')
+  @HttpCode(HttpStatus.OK)
   reset(@Param('asset', AssetParamPipe) asset: AssetId): AssetStateResponse {
     this.chaos.reset(asset, Date.now());
     return describe(asset, this.chaos.get(asset));
   }
 
   @Post('reset-all')
+  @HttpCode(HttpStatus.OK)
   resetAll(): { states: AssetStateResponse[] } {
     this.chaos.resetAll(Date.now());
     return this.status();

@@ -49,7 +49,7 @@ describe('AdminController', () => {
     vi.useRealTimers();
   });
 
-  it('should return 200 with disconnected state on POST /admin/btc/disconnect', () => {
+  it('should return disconnected state on disconnect', () => {
     const res = controller.disconnect('btc');
     expect(res).toEqual({ asset: 'btc', mode: ChaosMode.DISCONNECTED, since: 1_700_000_000_000 });
     expect(chaos.get('btc').mode).toBe(ChaosMode.DISCONNECTED);
@@ -79,7 +79,7 @@ describe('AdminController', () => {
     expect(res.frozenPrice).toBe(3_500);
   });
 
-  it('should return malformed state on POST /admin/btc/malformed', () => {
+  it('should return malformed state on malformed', () => {
     const res = controller.malformed('btc');
     expect(res.mode).toBe(ChaosMode.MALFORMED);
   });
@@ -90,7 +90,7 @@ describe('AdminController', () => {
     expect(res.mode).toBe(ChaosMode.HEALTHY);
   });
 
-  it('should restore both assets on POST /admin/reset-all', () => {
+  it('should restore both assets on reset-all', () => {
     controller.disconnect('btc');
     controller.malformed('eth');
     const res = controller.resetAll();
