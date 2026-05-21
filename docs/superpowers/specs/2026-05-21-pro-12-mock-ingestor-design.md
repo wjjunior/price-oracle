@@ -212,6 +212,7 @@ Every tick log line carries `event`, `asset`, `sourceId: 'mock'`, `correlationId
 ## Error handling
 
 - **Zod failure on env**: process exits with code 1 at boot.
+- **Boot failure (unreachable NATS at cold start, invalid env)**: the mock requires NATS reachable at startup (`reconnect: true` covers drops _after_ the first connection, not the cold start). Because such failures occur before the pino logger is flushed, `bootstrap()` catches them, emits a single structured fatal line (`event: 'bootstrap.failed'`) with an operator hint ("ensure `pnpm dev:infra` is running"), and exits non-zero — never a raw unhandled-rejection stack. Cold-start bus-dependence is acceptable for a dev/chaos tool; true degradation-under-outage is the aggregator's responsibility (Notion §7.3, §7.5).
 - **Zod failure on admin :asset**: 400 JSON error envelope (Nest exception filter).
 - **NATS publish failure**: caught inside `NatsService.publishContract` / `publishRaw`; logged at `warn`; the interval continues. A persistent disconnect surfaces via NATS reconnect events at `warn`.
 - **Schema-validated publish path**: an unexpected internal payload that fails `schema.parse` inside `publishContract` is a programmer error — logged at `error` and rethrown. This cannot be triggered by the chaos endpoints because those go through the dedicated `publishRaw` for `malformed`.
