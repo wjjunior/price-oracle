@@ -744,9 +744,14 @@ type Captured =
       schema: z.ZodType<unknown>;
       subject: string;
       payload: unknown;
-      headers?: Record<string, string>;
+      headers: Readonly<Record<string, string>> | undefined;
     }
-  | { kind: 'raw'; subject: string; body: string; headers?: Record<string, string> };
+  | {
+      kind: 'raw';
+      subject: string;
+      body: string;
+      headers: Readonly<Record<string, string>> | undefined;
+    };
 
 const buildFakeNats = (): { fake: NatsService; captured: Captured[] } => {
   const captured: Captured[] = [];
