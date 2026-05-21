@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { perSourceHealthScore, updateSourceState } from './source-state.js';
 
-import type { SourceState, Thresholds } from './types.js';
+import type { SourceState, Thresholds, Tick } from './types.js';
 import type { SourceHealth } from '@price-oracle/contracts/primitives';
 
 const cfg: Thresholds = {
@@ -57,6 +57,17 @@ describe('updateSourceState (properties)', () => {
           s = updateSourceState(s, null, 3_000 + i, cfg);
         }
         return s.health === 'HEALTHY';
+      }),
+    );
+  });
+
+  it('should never move lastTickAt backwards when applying an arbitrary tick', () => {
+    fc.assert(
+      fc.property(millisArb, millisArb, millisArb, (prevTs, tickTs, now) => {
+        const prev = makeState({ lastTickAt: prevTs });
+        const tick: Tick = { asset: 'btc', source: 'binance', price: 1, receivedAt: tickTs };
+        const next = updateSourceState(prev, tick, now, cfg);
+        return next.lastTickAt !== null && next.lastTickAt >= prevTs;
       }),
     );
   });

@@ -106,6 +106,30 @@ describe('updateSourceState', () => {
     expect(s.health).toBe('HEALTHY');
   });
 
+  it('should ignore an out-of-order tick older than the current lastTickAt', () => {
+    const prev = makeState({ health: 'HEALTHY', lastTickAt: 5_000, lastPrice: 100 });
+    const next = updateSourceState(prev, tickAt(3_000, 200), 5_001, cfg);
+    expect(next.lastTickAt).toBe(5_000);
+    expect(next.lastPrice).toBe(100);
+  });
+
+  it('should apply a tick whose receivedAt is at or after the current lastTickAt', () => {
+    const prev = makeState({ health: 'HEALTHY', lastTickAt: 5_000, lastPrice: 100 });
+    const sameTs = updateSourceState(prev, tickAt(5_000, 200), 5_001, cfg);
+    expect(sameTs.lastTickAt).toBe(5_000);
+    expect(sameTs.lastPrice).toBe(200);
+    const newer = updateSourceState(prev, tickAt(6_000, 300), 6_001, cfg);
+    expect(newer.lastTickAt).toBe(6_000);
+    expect(newer.lastPrice).toBe(300);
+  });
+
+  it('should apply the first tick to a never-seen source', () => {
+    const prev = makeState({ health: 'STALE', lastTickAt: null, lastPrice: null });
+    const next = updateSourceState(prev, tickAt(1_000, 50), 1_000, cfg);
+    expect(next.lastTickAt).toBe(1_000);
+    expect(next.lastPrice).toBe(50);
+  });
+
   it('should not mutate the previous state', () => {
     const prev = makeState({ health: 'HEALTHY', lastTickAt: 0 });
     const snapshot = { ...prev };
