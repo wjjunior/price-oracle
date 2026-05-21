@@ -4,17 +4,15 @@ export const DEFAULT_BINANCE_WS_URL =
   'wss://stream.binance.com:9443/stream?streams=btcusdt@trade/ethusdt@trade';
 export const DEFAULT_NATS_URL = 'nats://localhost:4222';
 
-const HttpsOrWssUrl = z
-  .string()
-  .url({ message: 'must be a full URL with scheme' })
-  .refine((v) => /^(wss?|https?):\/\//i.test(v), {
-    message: 'scheme must be ws(s) or http(s)',
-  });
+const HttpsOrWssUrl = z.url({
+  error: 'must be a full URL with scheme',
+  protocol: /^(wss?|https?)$/i,
+});
 
-const NatsUrl = z
-  .string()
-  .url({ message: 'must be a full URL with scheme' })
-  .refine((v) => /^nats:\/\//i.test(v), { message: 'scheme must be nats://' });
+const NatsUrl = z.url({
+  error: 'must be a full URL with scheme',
+  protocol: /^nats$/i,
+});
 
 const EnvSchema = z.object({
   BINANCE_WS_URL: HttpsOrWssUrl.default(DEFAULT_BINANCE_WS_URL),
