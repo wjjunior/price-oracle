@@ -1,0 +1,9 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - 'frontend/*'
+  - 'test'
+
+allowBuilds:
+  lefthook: true
+  unrs-resolver: true
