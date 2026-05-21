@@ -26,3 +26,7 @@ export type Millis = z.infer<typeof Millis>;
 
 export const CorrelationId = z.string().min(1);
 export type CorrelationId = z.infer<typeof CorrelationId>;
+
+// PRO-11 probe: deliberately broken type to demonstrate CI typecheck catches it.
+export const PRO_11_PROBE_BROKEN: number = 'this string violates the number annotation';
+
