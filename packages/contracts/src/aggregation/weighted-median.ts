@@ -27,5 +27,5 @@ export const weightedMedian = (samples: readonly WeightedSample[]): Price => {
     }
   }
 
-  return sorted[sorted.length - 1]!.value;
+  return sorted.at(-1)!.value;
 };
