@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./aggregation": "./src/aggregation/index.ts",
     "./events": "./src/events/index.ts",
     "./primitives": "./src/primitives.ts",
     "./rest": "./src/rest/index.ts",
@@ -18,6 +19,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "fast-check": "^3.23.2",
     "vitest": "^4.1.6"
   }
 }
