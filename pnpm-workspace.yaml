@@ -5,5 +5,7 @@ packages:
   - 'test'
 
 allowBuilds:
+  '@nestjs/core': true
+  esbuild: true
   lefthook: true
   unrs-resolver: true
