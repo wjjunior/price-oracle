@@ -32,6 +32,7 @@ price-oracle/
 ```
 
 Path aliases:
+
 - `@price-oracle/contracts/events`
 - `@price-oracle/contracts/primitives`
 - `@price-oracle/contracts/rest`
@@ -194,7 +195,7 @@ Default to zero JSDoc and zero inline comments. Function names, parameter names,
 Comments are reserved for the narrow case where:
 
 - The reader would not derive the meaning from the code in 5 seconds
-- The information is about *why* (decision, constraint, non-obvious quirk), not *what* the code does
+- The information is about _why_ (decision, constraint, non-obvious quirk), not _what_ the code does
 - Removing the comment would make the code harder to maintain correctly
 
 Formula reasoning, design rationale, sensitivity-analysis justification — these live in the README or the system design document, not in code comments. Code stays clean; rationale lives where reviewers expect documentation.

@@ -22,6 +22,13 @@
     "declarationMap": true,
     "sourceMap": true,
     "incremental": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@price-oracle/contracts/events": ["packages/contracts/src/events/index.ts"],
+      "@price-oracle/contracts/primitives": ["packages/contracts/src/primitives.ts"],
+      "@price-oracle/contracts/rest": ["packages/contracts/src/rest/index.ts"],
+      "@price-oracle/contracts/sse": ["packages/contracts/src/sse/envelope.ts"],
+      "@price-oracle/contracts/subjects": ["packages/contracts/src/subjects.ts"]
+    }
   }
 }

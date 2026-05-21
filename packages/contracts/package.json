@@ -1,0 +1,23 @@
+{
+  "name": "@price-oracle/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./events": "./src/events/index.ts",
+    "./primitives": "./src/primitives.ts",
+    "./rest": "./src/rest/index.ts",
+    "./sse": "./src/sse/envelope.ts",
+    "./subjects": "./src/subjects.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.6"
+  }
+}
