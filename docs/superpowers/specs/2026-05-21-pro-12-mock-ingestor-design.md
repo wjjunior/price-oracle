@@ -155,7 +155,7 @@ Pure function; `RandFn` injected so tests can drive deterministic sequences. No 
 
 `NatsService` wraps the official `nats` client:
 
-- `onModuleInit`: connect to `NATS_URL` with reconnect enabled and exponential backoff (max 30 s).
+- `onModuleInit`: connect to `NATS_URL` with reconnect enabled (fixed 1 s reconnect wait, unlimited attempts — the nats client's defaults suffice for this local/prototype scope; the 30 s capped exponential backoff in Notion AC-2 governs the real ingestors' exchange-WebSocket reconnect, not the mock's NATS client). `onModuleDestroy` drains, guarding `drain()` failures at `warn` (`nats.drain-failed`).
 - `onModuleDestroy`: drain and close.
 - `publishContract<T>(schema, subject, payload, opts)`: validates `payload` via `schema.parse`, encodes with the NATS JSON codec, publishes with `opts.headers` applied as `Headers`.
 - `publishRaw(subject, bytes, opts)`: publishes a raw byte buffer (or string) with the supplied headers — no validation. Used only by the malformed path.

@@ -630,7 +630,14 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy(): Promise<void> {
     if (!this.connection) return;
-    await this.connection.drain();
+    try {
+      await this.connection.drain();
+    } catch (err) {
+      this.logger.warn({
+        event: 'nats.drain-failed',
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
     this.connection = null;
   }
 
@@ -671,8 +678,10 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
   private async watchStatus(): Promise<void> {
     if (!this.connection) return;
     for await (const status of this.connection.status()) {
-      if (status.type === Events.Disconnect || status.type === DebugEvents.Reconnecting) {
-        this.logger.warn({ event: `nats.${status.type}`, data: status.data });
+      if (status.type === Events.Disconnect) {
+        this.logger.warn({ event: 'nats.disconnected', data: status.data });
+      } else if (status.type === DebugEvents.Reconnecting) {
+        this.logger.warn({ event: 'nats.reconnecting', data: status.data });
       } else if (status.type === Events.Reconnect) {
         this.logger.log({ event: 'nats.reconnected' });
       }
