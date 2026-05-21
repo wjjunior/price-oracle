@@ -39,8 +39,8 @@ export class BinanceService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(INGESTOR_CONFIG) private readonly config: IngestorConfig,
-    private readonly nats: NatsService,
-    private readonly logger: PinoLogger,
+    @Inject(NatsService) private readonly nats: NatsService,
+    @Inject(PinoLogger) private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(BinanceService.name);
   }

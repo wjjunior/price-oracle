@@ -18,7 +18,7 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(INGESTOR_CONFIG) private readonly config: IngestorConfig,
-    private readonly logger: PinoLogger,
+    @Inject(PinoLogger) private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(NatsService.name);
   }
