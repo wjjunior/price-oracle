@@ -61,7 +61,7 @@ apps/ingestor-mock/
 
 ## Chaos state model
 
-A single Nest singleton (`ChaosStateService`) holds the per-asset chaos state in a `Map<AssetId, ChaosState>`, initialized to `healthy` for both `btc` and `eth` at boot.
+A single Nest singleton (`ChaosStateService`) holds the per-asset chaos state in a `Record<AssetId, ChaosState>`, initialized to `healthy` for both `btc` and `eth` at boot.
 
 ```typescript
 type ChaosState =
