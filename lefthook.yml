@@ -1,0 +1,20 @@
+# Pre-commit hook manager. Hooks are installed automatically by lefthook's
+# postinstall when pnpm is allowed to run its lifecycle script (see
+# allowBuilds in pnpm-workspace.yaml).
+
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: '*.{ts,tsx,js,mjs,cjs}'
+      run: pnpm exec eslint --fix {staged_files}
+      stage_fixed: true
+
+    format:
+      glob: '*.{json,md,yaml,yml}'
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+
+    typecheck:
+      glob: '*.{ts,tsx}'
+      run: pnpm typecheck

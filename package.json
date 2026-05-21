@@ -1,0 +1,33 @@
+{
+  "name": "price-oracle",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Confidence-aware multi-source price feed for Bitcoin and Ethereum",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  },
+  "packageManager": "pnpm@11.1.1",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "test:integration": "pnpm -r --if-present test:integration"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^4.0.0",
+    "eslint-plugin-import-x": "^4.16.2",
+    "globals": "^15.11.0",
+    "lefthook": "^2.1.6",
+    "prettier": "^3.8.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.59.3"
+  }
+}
