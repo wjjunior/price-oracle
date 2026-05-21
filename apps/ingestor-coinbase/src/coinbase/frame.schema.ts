@@ -4,7 +4,6 @@ import { MarketTradesFrameSchema } from './market-trades.schema.js';
 
 export const SubscriptionsFrameSchema = z.object({
   channel: z.literal('subscriptions'),
-  client_id: z.string(),
   timestamp: z.iso.datetime(),
   sequence_num: z.number().int().nonnegative(),
   events: z.array(z.unknown()),

@@ -25,7 +25,6 @@ export const MarketTradesEventSchema = z.object({
 
 export const MarketTradesFrameSchema = z.object({
   channel: z.literal('market_trades'),
-  client_id: z.string(),
   timestamp: z.iso.datetime(),
   sequence_num: z.number().int().nonnegative(),
   events: z.array(MarketTradesEventSchema),
