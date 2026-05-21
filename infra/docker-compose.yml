@@ -1,0 +1,35 @@
+services:
+  nats:
+    image: nats:2.11.17-alpine
+    command: ['-c', '/etc/nats/nats.conf']
+    ports:
+      - '127.0.0.1:4222:4222'
+      - '127.0.0.1:8222:8222'
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf:ro
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '--quiet', 'http://localhost:8222/healthz']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  mongo:
+    image: mongo:7.0
+    ports:
+      - '127.0.0.1:27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  mongo-data:
+
+networks:
+  default:
+    name: price-oracle-dev
