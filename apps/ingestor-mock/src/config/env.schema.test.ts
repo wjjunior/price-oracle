@@ -1,38 +1,42 @@
 import { describe, expect, it } from 'vitest';
 
-import { loadConfig } from './env.schema.js';
+import {
+  DEFAULT_BTC_ANCHOR_USD,
+  DEFAULT_ETH_ANCHOR_USD,
+  DEFAULT_HTTP_PORT,
+  DEFAULT_NATS_URL,
+  DEFAULT_PRICE_VOLATILITY_PCT,
+  DEFAULT_TICK_INTERVAL_MS,
+  loadIngestorConfig,
+} from './env.schema.js';
 
-describe('loadConfig', () => {
+describe('loadIngestorConfig', () => {
   it('should apply defaults when env is empty', () => {
-    const cfg = loadConfig({});
-    expect(cfg.MOCK_HTTP_PORT).toBe(7401);
-    expect(cfg.MOCK_TICK_INTERVAL_MS).toBe(250);
-    expect(cfg.MOCK_BTC_ANCHOR_USD).toBe(95_000);
-    expect(cfg.MOCK_ETH_ANCHOR_USD).toBe(3_500);
-    expect(cfg.MOCK_PRICE_VOLATILITY_PCT).toBe(0.001);
-    expect(cfg.NATS_URL).toBe('nats://localhost:4222');
-    expect(cfg.LOG_LEVEL).toBe('info');
+    const cfg = loadIngestorConfig({});
+    expect(cfg.httpPort).toBe(DEFAULT_HTTP_PORT);
+    expect(cfg.tickIntervalMs).toBe(DEFAULT_TICK_INTERVAL_MS);
+    expect(cfg.btcAnchorUsd).toBe(DEFAULT_BTC_ANCHOR_USD);
+    expect(cfg.ethAnchorUsd).toBe(DEFAULT_ETH_ANCHOR_USD);
+    expect(cfg.priceVolatilityPct).toBe(DEFAULT_PRICE_VOLATILITY_PCT);
+    expect(cfg.natsUrl).toBe(DEFAULT_NATS_URL);
   });
 
   it('should coerce numeric strings from env vars', () => {
-    const cfg = loadConfig({
-      MOCK_HTTP_PORT: '8080',
-      MOCK_TICK_INTERVAL_MS: '100',
-    });
-    expect(cfg.MOCK_HTTP_PORT).toBe(8080);
-    expect(cfg.MOCK_TICK_INTERVAL_MS).toBe(100);
+    const cfg = loadIngestorConfig({ MOCK_HTTP_PORT: '8080', MOCK_TICK_INTERVAL_MS: '100' });
+    expect(cfg.httpPort).toBe(8080);
+    expect(cfg.tickIntervalMs).toBe(100);
   });
 
-  it('should fail boot on non-positive tick interval', () => {
-    expect(() => loadConfig({ MOCK_TICK_INTERVAL_MS: '0' })).toThrow();
-    expect(() => loadConfig({ MOCK_TICK_INTERVAL_MS: '-5' })).toThrow();
+  it('should reject a non-positive tick interval', () => {
+    expect(() => loadIngestorConfig({ MOCK_TICK_INTERVAL_MS: '0' })).toThrow();
+    expect(() => loadIngestorConfig({ MOCK_TICK_INTERVAL_MS: '-5' })).toThrow();
   });
 
-  it('should fail boot on invalid NATS_URL', () => {
-    expect(() => loadConfig({ NATS_URL: 'not-a-url' })).toThrow();
+  it('should reject a NATS_URL with a non-nats scheme', () => {
+    expect(() => loadIngestorConfig({ NATS_URL: 'https://nats.example.test:4222' })).toThrow();
   });
 
-  it('should fail boot on unknown LOG_LEVEL', () => {
-    expect(() => loadConfig({ LOG_LEVEL: 'trace' })).toThrow();
+  it('should reject an empty NATS_URL string', () => {
+    expect(() => loadIngestorConfig({ NATS_URL: '' })).toThrow();
   });
 });

@@ -16,7 +16,7 @@ interface AssetStateResponse {
 }
 
 const anchorFor = (asset: AssetId, cfg: IngestorConfig): number =>
-  asset === 'btc' ? cfg.MOCK_BTC_ANCHOR_USD : cfg.MOCK_ETH_ANCHOR_USD;
+  asset === 'btc' ? cfg.btcAnchorUsd : cfg.ethAnchorUsd;
 
 const describe = (asset: AssetId, state: ChaosState): AssetStateResponse => {
   if (state.mode === ChaosMode.STALE) {

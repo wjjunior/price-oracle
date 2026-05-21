@@ -1,13 +1,13 @@
 import { Global, Module } from '@nestjs/common';
 
-import { INGESTOR_CONFIG, loadConfig } from './env.schema.js';
+import { INGESTOR_CONFIG, loadIngestorConfig } from './env.schema.js';
 
 @Global()
 @Module({
   providers: [
     {
       provide: INGESTOR_CONFIG,
-      useFactory: () => loadConfig(process.env),
+      useFactory: () => loadIngestorConfig(),
     },
   ],
   exports: [INGESTOR_CONFIG],

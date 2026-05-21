@@ -11,7 +11,7 @@ async function bootstrap(): Promise<void> {
   app.useLogger(app.get(Logger));
   app.enableShutdownHooks();
   const cfg = app.get<IngestorConfig>(INGESTOR_CONFIG);
-  await app.listen(cfg.MOCK_HTTP_PORT);
+  await app.listen(cfg.httpPort);
 }
 
 try {

@@ -11,13 +11,12 @@ import { AdminController } from './admin.controller.js';
 import { AssetParamPipe } from './asset-param.pipe.js';
 
 const fakeConfig: IngestorConfig = {
-  MOCK_HTTP_PORT: 7401,
-  MOCK_TICK_INTERVAL_MS: 250,
-  MOCK_BTC_ANCHOR_USD: 95_000,
-  MOCK_ETH_ANCHOR_USD: 3_500,
-  MOCK_PRICE_VOLATILITY_PCT: 0.001,
-  NATS_URL: 'nats://localhost:4222',
-  LOG_LEVEL: 'info',
+  httpPort: 7401,
+  tickIntervalMs: 250,
+  btcAnchorUsd: 95_000,
+  ethAnchorUsd: 3_500,
+  priceVolatilityPct: 0.001,
+  natsUrl: 'nats://localhost:4222',
 };
 
 describe('AdminController', () => {

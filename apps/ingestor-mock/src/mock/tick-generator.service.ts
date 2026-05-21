@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
-import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { TickSchema } from '@price-oracle/contracts/events';
 import { type AssetId, type Millis, type Price } from '@price-oracle/contracts/primitives';
 import { ticksSubject } from '@price-oracle/contracts/subjects';
+import { PinoLogger } from 'nestjs-pino';
 
 import { INGESTOR_CONFIG, type IngestorConfig } from '../config/env.schema.js';
 import { NatsService } from '../nats/nats.service.js';
@@ -14,7 +15,6 @@ import { nextPrice } from './random-walk.js';
 
 const ASSETS: readonly AssetId[] = ['btc', 'eth'];
 const MOCK_SOURCE = 'mock' as const;
-const CORRELATION_HEADER = 'x-correlation-id';
 
 export interface LastPublished {
   readonly price: Price;
@@ -23,7 +23,6 @@ export interface LastPublished {
 
 @Injectable()
 export class TickGeneratorService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(TickGeneratorService.name);
   private interval: NodeJS.Timeout | null = null;
   private readonly lastPrice: Record<AssetId, Price>;
   private readonly lastTickAt: Record<AssetId, Millis> = { btc: 0, eth: 0 };
@@ -32,26 +31,28 @@ export class TickGeneratorService implements OnModuleInit, OnModuleDestroy {
     @Inject(INGESTOR_CONFIG) private readonly config: IngestorConfig,
     @Inject(NatsService) private readonly nats: NatsService,
     @Inject(ChaosStateService) private readonly chaos: ChaosStateService,
+    @Inject(PinoLogger) private readonly logger: PinoLogger,
   ) {
+    this.logger.setContext(TickGeneratorService.name);
     this.lastPrice = {
-      btc: config.MOCK_BTC_ANCHOR_USD,
-      eth: config.MOCK_ETH_ANCHOR_USD,
+      btc: config.btcAnchorUsd,
+      eth: config.ethAnchorUsd,
     };
   }
 
   onModuleInit(): void {
     this.emitAll();
-    this.interval = setInterval(() => this.emitAll(), this.config.MOCK_TICK_INTERVAL_MS);
-    this.logger.log({
-      event: 'lifecycle.start',
-      intervalMs: this.config.MOCK_TICK_INTERVAL_MS,
-    });
+    this.interval = setInterval(() => this.emitAll(), this.config.tickIntervalMs);
+    this.logger.info(
+      { event: 'lifecycle.start', intervalMs: this.config.tickIntervalMs },
+      'Tick generator started',
+    );
   }
 
   onModuleDestroy(): void {
     if (this.interval) clearInterval(this.interval);
     this.interval = null;
-    this.logger.log({ event: 'lifecycle.stop' });
+    this.logger.info({ event: 'lifecycle.stop' }, 'Tick generator stopped');
   }
 
   lastPublished(asset: AssetId): LastPublished | null {
@@ -67,14 +68,13 @@ export class TickGeneratorService implements OnModuleInit, OnModuleDestroy {
   private emitOne(asset: AssetId, now: Millis): void {
     const state = this.chaos.get(asset);
     const correlationId = randomUUID();
-    const headers = { [CORRELATION_HEADER]: correlationId };
     const subject = ticksSubject(asset, MOCK_SOURCE);
 
     if (state.mode === ChaosMode.DISCONNECTED) return;
 
     if (state.mode === ChaosMode.MALFORMED) {
       const body = JSON.stringify({ asset, source: MOCK_SOURCE, price: null, receivedAt: now });
-      this.nats.publishRaw(subject, body, { headers });
+      this.nats.publishRaw(subject, body, correlationId);
       return;
     }
 
@@ -89,13 +89,13 @@ export class TickGeneratorService implements OnModuleInit, OnModuleDestroy {
           receivedAt: now,
           sourceTimestamp: state.frozenSourceTimestamp,
         },
-        { headers },
+        correlationId,
       );
       return;
     }
 
     const price = nextPrice(this.lastPrice[asset], {
-      volatilityPct: this.config.MOCK_PRICE_VOLATILITY_PCT,
+      volatilityPct: this.config.priceVolatilityPct,
       rand: Math.random,
     });
     this.lastPrice[asset] = price;
@@ -104,7 +104,7 @@ export class TickGeneratorService implements OnModuleInit, OnModuleDestroy {
       TickSchema,
       subject,
       { asset, source: MOCK_SOURCE, price, receivedAt: now, sourceTimestamp: now },
-      { headers },
+      correlationId,
     );
   }
 }

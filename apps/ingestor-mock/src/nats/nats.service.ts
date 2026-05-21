@@ -1,98 +1,91 @@
-import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import {
-  connect,
-  DebugEvents,
-  Events,
-  headers as natsHeaders,
-  type NatsConnection,
-} from 'nats';
+import { headers, type NatsConnection } from '@nats-io/nats-core';
+import { connect } from '@nats-io/transport-node';
+import { Inject, Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 
 import { INGESTOR_CONFIG, type IngestorConfig } from '../config/env.schema.js';
 
+import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import type { z } from 'zod';
 
-const RECONNECT_TIME_WAIT_MS = 1_000;
+export const CORRELATION_HEADER = 'correlation-id';
 
-export interface PublishOptions {
-  readonly headers?: Readonly<Record<string, string>>;
+function redactUrl(url: string): string {
+  return url.replace(/\/\/[^@/]+@/, '//***@');
 }
 
 @Injectable()
 export class NatsService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(NatsService.name);
-  private connection: NatsConnection | null = null;
   private readonly encoder = new TextEncoder();
+  private connection: NatsConnection | undefined;
 
-  constructor(@Inject(INGESTOR_CONFIG) private readonly config: IngestorConfig) {}
+  constructor(
+    @Inject(INGESTOR_CONFIG) private readonly config: IngestorConfig,
+    @Inject(PinoLogger) private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(NatsService.name);
+  }
 
   async onModuleInit(): Promise<void> {
-    this.connection = await connect({
-      servers: this.config.NATS_URL,
-      reconnect: true,
-      reconnectTimeWait: RECONNECT_TIME_WAIT_MS,
-      maxReconnectAttempts: -1,
-    });
-    this.logger.log({ event: 'nats.connected', url: this.config.NATS_URL });
-    void this.watchStatus();
+    this.connection = await connect({ servers: this.config.natsUrl });
+    this.logger.info(
+      { event: 'nats.connect', url: redactUrl(this.config.natsUrl) },
+      'NATS connected',
+    );
   }
 
   async onModuleDestroy(): Promise<void> {
     if (!this.connection) return;
-    try {
-      await this.connection.drain();
-    } catch (err) {
-      this.logger.warn({
-        event: 'nats.drain-failed',
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
-    this.connection = null;
+    await this.connection.drain();
+    this.connection = undefined;
   }
 
-  publishContract<T>(
-    schema: z.ZodType<T>,
+  publishContract<S extends z.ZodTypeAny>(
+    schema: S,
     subject: string,
-    payload: T,
-    opts: PublishOptions = {},
+    payload: z.input<S>,
+    correlationId: string,
   ): void {
-    const validated = schema.parse(payload);
-    this.publishBytes(subject, this.encoder.encode(JSON.stringify(validated)), opts);
-  }
-
-  publishRaw(subject: string, body: string, opts: PublishOptions = {}): void {
-    this.publishBytes(subject, this.encoder.encode(body), opts);
-  }
-
-  private publishBytes(subject: string, bytes: Uint8Array, opts: PublishOptions): void {
-    if (!this.connection) {
-      this.logger.warn({ event: 'nats.publish-failed', reason: 'not-connected', subject });
+    const result = schema.safeParse(payload);
+    if (!result.success) {
+      this.logger.warn(
+        { event: 'nats.publish.invalid', subject, correlationId, issues: result.error.issues },
+        'Refusing to publish a payload that failed contract validation',
+      );
       return;
     }
-    try {
-      const hdrs = opts.headers ? natsHeaders() : undefined;
-      if (hdrs && opts.headers) {
-        for (const [k, v] of Object.entries(opts.headers)) hdrs.set(k, v);
-      }
-      this.connection.publish(subject, bytes, hdrs ? { headers: hdrs } : undefined);
-    } catch (err) {
-      this.logger.warn({
-        event: 'nats.publish-failed',
-        subject,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
+    this.publishBytes(subject, this.encoder.encode(JSON.stringify(result.data)), correlationId);
   }
 
-  private async watchStatus(): Promise<void> {
-    if (!this.connection) return;
-    for await (const status of this.connection.status()) {
-      if (status.type === Events.Disconnect) {
-        this.logger.warn({ event: 'nats.disconnected', data: status.data });
-      } else if (status.type === DebugEvents.Reconnecting) {
-        this.logger.warn({ event: 'nats.reconnecting', data: status.data });
-      } else if (status.type === Events.Reconnect) {
-        this.logger.log({ event: 'nats.reconnected' });
-      }
+  // Mock-only: emits an intentionally invalid payload for the `malformed` chaos mode,
+  // bypassing schema validation so the aggregator's Zod boundary is exercised.
+  publishRaw(subject: string, body: string, correlationId: string): void {
+    this.publishBytes(subject, this.encoder.encode(body), correlationId);
+  }
+
+  private publishBytes(subject: string, bytes: Uint8Array, correlationId: string): void {
+    const connection = this.connection;
+    if (!connection) {
+      this.logger.warn(
+        { event: 'nats.publish.skipped', subject, correlationId },
+        'NATS connection not ready',
+      );
+      return;
+    }
+    const h = headers();
+    h.append(CORRELATION_HEADER, correlationId);
+    try {
+      connection.publish(subject, bytes, { headers: h });
+    } catch (err) {
+      this.logger.warn(
+        {
+          event: 'nats.publish.failed',
+          subject,
+          correlationId,
+          error: err instanceof Error ? err.message : String(err),
+        },
+        'NATS publish failed',
+      );
     }
   }
 }

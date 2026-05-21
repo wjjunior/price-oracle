@@ -1,9 +1,10 @@
 import { TickSchema } from '@price-oracle/contracts/events';
 import { ticksSubject } from '@price-oracle/contracts/subjects';
+import { PinoLogger } from 'nestjs-pino';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type IngestorConfig } from '../config/env.schema.js';
-import { type NatsService, type PublishOptions } from '../nats/nats.service.js';
+import { type NatsService } from '../nats/nats.service.js';
 
 import { ChaosStateService } from './chaos-state.service.js';
 import { TickGeneratorService } from './tick-generator.service.js';
@@ -16,35 +17,41 @@ type Captured =
       schema: z.ZodType<unknown>;
       subject: string;
       payload: unknown;
-      headers: Readonly<Record<string, string>> | undefined;
+      correlationId: string;
     }
-  | { kind: 'raw'; subject: string; body: string; headers: Readonly<Record<string, string>> | undefined };
+  | { kind: 'raw'; subject: string; body: string; correlationId: string };
 
 const buildFakeNats = (): { fake: NatsService; captured: Captured[] } => {
   const captured: Captured[] = [];
   const fake = {
     publishContract: vi.fn(
-      (schema: z.ZodType<unknown>, subject: string, payload: unknown, opts: PublishOptions = {}) => {
-        captured.push({ kind: 'contract', schema, subject, payload, headers: opts.headers });
+      (schema: z.ZodType<unknown>, subject: string, payload: unknown, correlationId: string) => {
+        captured.push({ kind: 'contract', schema, subject, payload, correlationId });
       },
     ),
-    publishRaw: vi.fn((subject: string, body: string, opts: PublishOptions = {}) => {
-      captured.push({ kind: 'raw', subject, body, headers: opts.headers });
+    publishRaw: vi.fn((subject: string, body: string, correlationId: string) => {
+      captured.push({ kind: 'raw', subject, body, correlationId });
     }),
   } as unknown as NatsService;
   return { fake, captured };
 };
 
 const buildConfig = (overrides: Partial<IngestorConfig> = {}): IngestorConfig => ({
-  MOCK_HTTP_PORT: 7401,
-  MOCK_TICK_INTERVAL_MS: 250,
-  MOCK_BTC_ANCHOR_USD: 95_000,
-  MOCK_ETH_ANCHOR_USD: 3_500,
-  MOCK_PRICE_VOLATILITY_PCT: 0.001,
-  NATS_URL: 'nats://localhost:4222',
-  LOG_LEVEL: 'info',
+  httpPort: 7401,
+  tickIntervalMs: 250,
+  btcAnchorUsd: 95_000,
+  ethAnchorUsd: 3_500,
+  priceVolatilityPct: 0.001,
+  natsUrl: 'nats://localhost:4222',
   ...overrides,
 });
+
+const fakeLogger = {
+  setContext: vi.fn(),
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+} as unknown as PinoLogger;
 
 describe('TickGeneratorService', () => {
   let chaos: ChaosStateService;
@@ -58,7 +65,7 @@ describe('TickGeneratorService', () => {
     const built = buildFakeNats();
     nats = built.fake;
     captured = built.captured;
-    svc = new TickGeneratorService(buildConfig(), nats, chaos);
+    svc = new TickGeneratorService(buildConfig(), nats, chaos, fakeLogger);
   });
 
   afterEach(() => {
@@ -128,12 +135,12 @@ describe('TickGeneratorService', () => {
     expect(validation.success).toBe(false);
   });
 
-  it('should attach a correlation-id header to every publish', async () => {
+  it('should attach a correlation id to every publish', async () => {
     svc.onModuleInit();
     await vi.advanceTimersByTimeAsync(500);
     expect(captured.length).toBeGreaterThan(0);
     for (const c of captured) {
-      expect(c.headers?.['x-correlation-id']).toMatch(/^[0-9a-f-]{36}$/);
+      expect(c.correlationId).toMatch(/^[0-9a-f-]{36}$/);
     }
   });
 });
