@@ -8,6 +8,8 @@
 
 **Tech Stack:** TypeScript 5.4+ (strict, NodeNext), NestJS 11, `nats` 2.x client, Zod 4, `pino` + `nestjs-pino`, Vitest 4, pnpm workspace.
 
+**Runtime note (load-bearing):** Apps run via `tsx` (source, no `tsc` emit) so cross-package imports of the source-only `@price-oracle/contracts` resolve without a build step. `tsx`/esbuild does **not** emit `design:paramtypes` decorator metadata, so every NestJS constructor dependency — including class-typed ones — is wired with an explicit `@Inject(Token)`. Do not rely on type-reflection DI. `typecheck` is `tsc --noEmit`; there is no `tsc` build and no `dist/`.
+
 **Spec reference:** `docs/superpowers/specs/2026-05-21-pro-12-mock-ingestor-design.md`. Read it first if any task is ambiguous.
 
 **Branch:** `feat/PRO-12-mock-ingestor` (already created).
@@ -64,12 +66,10 @@ Workspace-level edits: none expected — `apps/*` is already in `pnpm-workspace.
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "dist/main.js",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "build": "tsc",
-    "start": "node dist/main.js",
+    "start": "tsx src/main.ts",
     "start:dev": "tsx watch src/main.ts"
   },
   "dependencies": {
@@ -96,14 +96,13 @@ Workspace-level edits: none expected — `apps/*` is already in `pnpm-workspace.
 
 - [ ] **Step 1.2: Create `apps/ingestor-mock/tsconfig.json`**
 
-NestJS decorators require `experimentalDecorators` + `emitDecoratorMetadata`. Override `verbatimModuleSyntax` from base (incompatible with `emitDecoratorMetadata` reflection).
+NestJS decorators require `experimentalDecorators` + `emitDecoratorMetadata`. Override `verbatimModuleSyntax` from base (incompatible with decorator reflection). No `rootDir`/`outDir`: this app is typechecked only (`tsc --noEmit`) and run via `tsx`; setting a `rootDir` would make `tsc` reject the cross-package `@price-oracle/contracts` source imports (TS6059, "not under rootDir").
 
 ```json
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
+    "noEmit": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "verbatimModuleSyntax": false
@@ -914,8 +913,8 @@ export class TickGeneratorService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(INGESTOR_CONFIG) private readonly config: IngestorConfig,
-    private readonly nats: NatsService,
-    private readonly chaos: ChaosStateService,
+    @Inject(NatsService) private readonly nats: NatsService,
+    @Inject(ChaosStateService) private readonly chaos: ChaosStateService,
   ) {
     this.lastPrice = {
       btc: config.MOCK_BTC_ANCHOR_USD,
@@ -1224,8 +1223,8 @@ const describe = (asset: AssetId, state: ChaosState): AssetStateResponse => {
 @Controller('admin')
 export class AdminController {
   constructor(
-    private readonly chaos: ChaosStateService,
-    private readonly generator: TickGeneratorService,
+    @Inject(ChaosStateService) private readonly chaos: ChaosStateService,
+    @Inject(TickGeneratorService) private readonly generator: TickGeneratorService,
     @Inject(INGESTOR_CONFIG) private readonly config: IngestorConfig,
   ) {}
 
