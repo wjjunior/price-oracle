@@ -24,6 +24,7 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
+      "@price-oracle/contracts/aggregation": ["packages/contracts/src/aggregation/index.ts"],
       "@price-oracle/contracts/events": ["packages/contracts/src/events/index.ts"],
       "@price-oracle/contracts/primitives": ["packages/contracts/src/primitives.ts"],
       "@price-oracle/contracts/rest": ["packages/contracts/src/rest/index.ts"],
