@@ -22,7 +22,7 @@ export type Thresholds = {
 
 export type BreakerConfig = {
   readonly confidenceFloor: Confidence;
-  readonly openWindowMs: Millis;
+  readonly tripStreak: number;
   readonly recoveryWindowMs: Millis;
   readonly halfOpenProbeStreak: number;
 };

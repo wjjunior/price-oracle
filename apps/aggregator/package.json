@@ -11,6 +11,7 @@
     "@price-oracle/contracts": "workspace:*"
   },
   "devDependencies": {
+    "fast-check": "^3.23.2",
     "vitest": "^4.1.6"
   }
 }
