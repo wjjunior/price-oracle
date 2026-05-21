@@ -597,7 +597,7 @@ No direct unit tests — the tick generator tests in Task 7 inject a stub that s
 ```typescript
 // apps/ingestor-mock/src/nats/nats.service.ts
 import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { connect, headers as natsHeaders, type NatsConnection } from 'nats';
+import { connect, DebugEvents, Events, headers as natsHeaders, type NatsConnection } from 'nats';
 
 import { INGESTOR_CONFIG, type IngestorConfig } from '../config/env.schema.js';
 
@@ -671,9 +671,9 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
   private async watchStatus(): Promise<void> {
     if (!this.connection) return;
     for await (const status of this.connection.status()) {
-      if (status.type === 'disconnect' || status.type === 'reconnecting') {
+      if (status.type === Events.Disconnect || status.type === DebugEvents.Reconnecting) {
         this.logger.warn({ event: `nats.${status.type}`, data: status.data });
-      } else if (status.type === 'reconnect') {
+      } else if (status.type === Events.Reconnect) {
         this.logger.log({ event: 'nats.reconnected' });
       }
     }
