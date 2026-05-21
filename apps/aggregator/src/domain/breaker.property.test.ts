@@ -25,9 +25,8 @@ const inputArb: fc.Arbitrary<BreakerInput> = fc.record({
 
 type Runtime = { state: BreakerState; streak: number; openedAt: number | null };
 
-// Models the orchestrator's per-tick streak discipline (the counter is application
-// state, not the FSM's): count consecutive readings matching the candidate condition,
-// reset on a flip or on any state change.
+// The streak counter is the orchestrator's application state, not the FSM's; this
+// models that bookkeeping so the anti-flapping property can be driven end-to-end.
 const step = (rt: Runtime, confidence: number, now: number, cfg: BreakerConfig): Runtime => {
   const belowFloor = confidence < cfg.confidenceFloor;
   let streak: number;
@@ -72,7 +71,7 @@ describe('transitionBreaker (properties)', () => {
         cfgArb,
         fc.nat(),
         (confidence, now, cfg, seed) => {
-          const elapsed = seed % cfg.recoveryWindowMs; // 0 <= elapsed < recoveryWindowMs
+          const elapsed = seed % cfg.recoveryWindowMs;
           const openedAt = now - elapsed;
           return (
             transitionBreaker('OPEN', { confidence, streak: 0, openedAt }, now, cfg) === 'OPEN'
@@ -121,10 +120,10 @@ describe('transitionBreaker (properties)', () => {
       fc.property(
         cfgArb,
         fc.integer({ min: 0, max: 50 }),
-        unit,
+        fc.double({ min: 0, max: 1, maxExcluded: true, noNaN: true, noDefaultInfinity: true }),
         millis,
-        (cfg, streak, frac, now) => {
-          const badConfidence = cfg.confidenceFloor * frac * 0.999; // strictly below floor
+        (cfg, streak, belowFrac, now) => {
+          const badConfidence = cfg.confidenceFloor * belowFrac;
           return (
             transitionBreaker(
               'HALF_OPEN',
