@@ -14,9 +14,9 @@ async function bootstrap(): Promise<void> {
   await app.listen(cfg.MOCK_HTTP_PORT);
 }
 
-// Boot failures (unreachable NATS, invalid env) occur before the pino logger is
-// flushed, so emit a structured fatal line directly and exit non-zero.
-void bootstrap().catch((err: unknown) => {
+try {
+  await bootstrap();
+} catch (err: unknown) {
   const message = err instanceof Error ? err.message : String(err);
   console.error(
     JSON.stringify({
@@ -28,4 +28,4 @@ void bootstrap().catch((err: unknown) => {
     }),
   );
   process.exit(1);
-});
+}

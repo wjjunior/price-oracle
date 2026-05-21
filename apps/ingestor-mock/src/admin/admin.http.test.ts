@@ -46,31 +46,31 @@ describe('Admin HTTP', () => {
     await app.close();
   });
 
-  it('should respond 200 to POST /admin/btc/disconnect', async () => {
-    await request(app.getHttpServer()).post('/admin/btc/disconnect').expect(200);
+  it('should respond 200 to POST /admin/btc/disconnect', () => {
+    return request(app.getHttpServer()).post('/admin/btc/disconnect').expect(200);
   });
 
-  it('should respond 200 to POST /admin/eth/stale', async () => {
-    await request(app.getHttpServer()).post('/admin/eth/stale').expect(200);
+  it('should respond 200 to POST /admin/eth/stale', () => {
+    return request(app.getHttpServer()).post('/admin/eth/stale').expect(200);
   });
 
-  it('should respond 200 to POST /admin/btc/malformed', async () => {
-    await request(app.getHttpServer()).post('/admin/btc/malformed').expect(200);
+  it('should respond 200 to POST /admin/btc/malformed', () => {
+    return request(app.getHttpServer()).post('/admin/btc/malformed').expect(200);
   });
 
-  it('should respond 200 to POST /admin/btc/reset', async () => {
-    await request(app.getHttpServer()).post('/admin/btc/reset').expect(200);
+  it('should respond 200 to POST /admin/btc/reset', () => {
+    return request(app.getHttpServer()).post('/admin/btc/reset').expect(200);
   });
 
-  it('should respond 200 to POST /admin/reset-all', async () => {
-    await request(app.getHttpServer()).post('/admin/reset-all').expect(200);
+  it('should respond 200 to POST /admin/reset-all', () => {
+    return request(app.getHttpServer()).post('/admin/reset-all').expect(200);
   });
 
-  it('should respond 200 to GET /admin/status', async () => {
-    await request(app.getHttpServer()).get('/admin/status').expect(200);
+  it('should respond 200 to GET /admin/status', () => {
+    return request(app.getHttpServer()).get('/admin/status').expect(200);
   });
 
-  it('should respond 400 to a request for an unknown asset', async () => {
-    await request(app.getHttpServer()).post('/admin/sol/disconnect').expect(400);
+  it('should respond 400 to a request for an unknown asset', () => {
+    return request(app.getHttpServer()).post('/admin/sol/disconnect').expect(400);
   });
 });
