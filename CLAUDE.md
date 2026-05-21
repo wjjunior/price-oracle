@@ -255,6 +255,7 @@ Every log line carries `service`, `event`, and `correlationId` when context exis
 - **Correlation IDs propagate end-to-end** via NATS message headers (ingestor → aggregator) and SSE envelopes (aggregator → dashboard). Every log line carries `service`, `event`, `asset` (where applicable), `correlationId`. The operator can reconstruct a tick's lifecycle by grepping a single ID across all process logs.
 - **Anthropic stub fallback** preserves end-to-end runnability without secrets (design §3.11). The selector lives at composition time only; the orchestrator code path is identical in both cases.
 - **Aggregator restart recovers** `lastKnownAggregate` per asset from `AuditPort` and serves it via `/api/snapshot?asset=...` until the first new tick arrives; per-source and breaker state reconverge naturally as ticks resume (design §7.3).
+- **NestJS DI under `tsx` needs explicit `@Inject()` on every constructor parameter.** `tsx` (esbuild) does not emit TypeScript decorator metadata (`design:paramtypes`), so type-based constructor injection silently resolves to `undefined` at runtime. Always pass an explicit token — `@Inject(SomeService)`, `@Inject(SOME_TOKEN)`, `@Inject(PinoLogger)` — for class deps and value tokens alike. Symptom when forgotten: `Cannot read properties of undefined` inside a constructor.
 
 ## Library and integration documentation
 
