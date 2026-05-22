@@ -48,8 +48,6 @@ describe('restart recovery', () => {
       { timeoutMs: WARMUP_BUDGET_MS },
     );
 
-    // Stop every writer (tick source + aggregator) so the persisted snapshot is stable,
-    // then confirm it actually reached Mongo before recovering.
     await stack.stopMock();
     await stack.stopAggregator();
 
@@ -59,8 +57,6 @@ describe('restart recovery', () => {
       { timeoutMs: PERSIST_BUDGET_MS },
     );
 
-    // Fresh aggregator, fresh in-memory state, same Mongo: it must recover from persistence,
-    // since the (now stopped) sources can produce no new aggregate.
     await stack.startAggregator();
 
     const recovered = await getSnapshot(stack.aggUrl, BTC);

@@ -355,7 +355,6 @@ describe('Orchestrator', () => {
     release();
     await flushMicrotasks();
 
-    // First write completes, the intermediate snapshot is collapsed, the latest is written.
     expect(h.audit.recorded).toHaveLength(2);
     expect(h.audit.recorded.at(-1)?.price).toBe(h.orchestrator.getSnapshot('btc')?.price);
   });
