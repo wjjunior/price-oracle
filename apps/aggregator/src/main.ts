@@ -14,7 +14,6 @@ async function bootstrap(): Promise<void> {
     abortOnError: false,
   });
   app.useLogger(app.get(Logger));
-  app.enableShutdownHooks();
   const cfg = app.get<AggregatorConfig>(AGGREGATOR_CONFIG);
   app.enableCors({ origin: cfg.corsOrigin });
   await app.listen(cfg.httpPort);
