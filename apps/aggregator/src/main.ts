@@ -1,5 +1,7 @@
 import 'reflect-metadata';
 
+import { inspect } from 'node:util';
+
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
 
@@ -35,7 +37,7 @@ async function bootstrap(): Promise<void> {
 try {
   await bootstrap();
 } catch (err: unknown) {
-  const message = err instanceof Error ? err.message : String(err);
+  const message = err instanceof Error ? err.message : inspect(err);
   console.error(
     JSON.stringify({
       level: 'fatal',

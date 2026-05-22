@@ -36,17 +36,16 @@ type Harness = {
   diagnose: ReturnType<typeof vi.fn>;
 };
 
-const setup = (diagnoseImpl: () => Promise<DiagnoseResult>): Harness => {
+const setup = (diagnoseImpl: DiagnosePort['diagnose']): Harness => {
   const appended: AuditEvent[] = [];
-  const audit = {
-    append: vi.fn(async (e: AuditEvent) => {
-      appended.push(e);
-    }),
-    recent: vi.fn().mockResolvedValue([]),
-    lastKnownAggregate: vi.fn().mockResolvedValue(null),
-  } as unknown as AuditPort;
-  const diagnose = vi.fn(diagnoseImpl);
-  const port = { diagnose } as unknown as DiagnosePort;
+  const append = vi.fn<AuditPort['append']>(async (e) => {
+    appended.push(e);
+  });
+  const recent = vi.fn<AuditPort['recent']>().mockResolvedValue([]);
+  const lastKnownAggregate = vi.fn<AuditPort['lastKnownAggregate']>().mockResolvedValue(null);
+  const audit: AuditPort = { append, recent, lastKnownAggregate };
+  const diagnose = vi.fn<DiagnosePort['diagnose']>(diagnoseImpl);
+  const port: DiagnosePort = { diagnose };
   const controller = new DiagnoseController(fakeOrchestrator(), port, audit, makeLogger());
   return { controller, appended, diagnose };
 };

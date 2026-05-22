@@ -36,12 +36,12 @@ const config: OrchestratorConfig = {
   },
 };
 
-const tick = (
-  asset: AssetId,
-  source: SourceId,
-  price: number,
-  receivedAt: Millis,
-): Tick => ({ asset, source, price, receivedAt });
+const tick = (asset: AssetId, source: SourceId, price: number, receivedAt: Millis): Tick => ({
+  asset,
+  source,
+  price,
+  receivedAt,
+});
 
 class FakeSourceStream implements SourceStreamPort {
   onTick: CapturedOnTick | null = null;
@@ -357,7 +357,9 @@ describe('Orchestrator', () => {
     feedHealthy(h.orchestrator, 'btc', config.sources, 50_000, 1_000_000);
 
     const states = h.orchestrator.getSourceStates('btc');
-    expect(states.map((s) => s.source).sort()).toEqual([...config.sources].sort());
+    expect(states.map((s) => s.source).sort((a, b) => a.localeCompare(b))).toEqual(
+      [...config.sources].sort((a, b) => a.localeCompare(b)),
+    );
     expect(states.every((s) => s.asset === 'btc')).toBe(true);
     expect(states.some((s) => s.lastPrice === 50_000)).toBe(true);
   });
