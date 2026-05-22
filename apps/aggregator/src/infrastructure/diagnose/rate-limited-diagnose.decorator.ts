@@ -14,9 +14,6 @@ const DIAGNOSE_RATE_LIMIT_WINDOW_MS = 10_000;
 
 export class RateLimitedDiagnose implements DiagnosePort {
   private readonly inFlight = new Map<string, Promise<DiagnoseResult>>();
-  // Per-asset, not per-client: this single-operator tool has no client identity to key on,
-  // and the window's job is to guard the LLM call's cost/latency — a per-asset scope (the
-  // natural unit of a per-asset diagnose) does that. See System Design §7.2.
   private readonly lastStartAt = new Map<AssetId, number>();
 
   constructor(
