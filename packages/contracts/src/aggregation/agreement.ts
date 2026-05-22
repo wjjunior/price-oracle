@@ -15,7 +15,6 @@ export const computeAgreement = (activePrices: readonly Price[]): number => {
   if (min === max) return 1;
 
   const mean = sum / activePrices.length;
-  if (mean <= 0) return 0;
 
   let squaredDeviationSum = 0;
   for (const price of activePrices) {
