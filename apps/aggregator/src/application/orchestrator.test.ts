@@ -288,20 +288,62 @@ describe('Orchestrator', () => {
     expect(reopen).toHaveLength(1);
   });
 
+  const driftMockCycle = (now: Millis): void => {
+    h.orchestrator.routeTick(tick('btc', 'binance', 50_000, now), 'cid');
+    h.orchestrator.routeTick(tick('btc', 'coinbase', 50_000, now), 'cid');
+    h.orchestrator.routeTick(tick('btc', 'mock', 60_000, now), 'cid');
+  };
+
+  const healthyCycle = (now: Millis): void => {
+    feedHealthy(h.orchestrator, 'btc', config.sources, 50_000, now);
+  };
+
+  const mockAnomalies = (): AuditEvent[] =>
+    h.audit.appended.filter(
+      (e) => e.type === 'AnomalyDetected' && e.asset === 'btc' && e.source === 'mock',
+    );
+
   it('should emit an AnomalyDetected audit event after streakLength consecutive drift cycles', async () => {
     const now = 1_000_000;
-    for (let i = 0; i <= config.anomaly.streakLength; i += 1) {
-      h.orchestrator.routeTick(tick('btc', 'binance', 50_000, now + i), 'cid');
-      h.orchestrator.routeTick(tick('btc', 'coinbase', 50_000, now + i), 'cid');
-      h.orchestrator.routeTick(tick('btc', 'mock', 60_000, now + i), 'cid');
+    for (let i = 0; i < config.anomaly.streakLength; i += 1) {
+      driftMockCycle(now + i);
       await h.orchestrator.pulse(now + i);
     }
 
-    const anomalies = h.audit.appended.filter(
-      (e) => e.type === 'AnomalyDetected' && e.asset === 'btc' && e.source === 'mock',
-    );
-    expect(anomalies.length).toBeGreaterThan(0);
+    const anomalies = mockAnomalies();
+    expect(anomalies).toHaveLength(1);
     expect(anomalies[0]?.type === 'AnomalyDetected' && anomalies[0].metric).toBe('price-drift');
+  });
+
+  it('should emit AnomalyDetected only once while a drift persists (edge-triggered)', async () => {
+    const now = 1_000_000;
+    for (let i = 0; i < config.anomaly.streakLength + 5; i += 1) {
+      driftMockCycle(now + i);
+      await h.orchestrator.pulse(now + i);
+    }
+
+    expect(mockAnomalies()).toHaveLength(1);
+  });
+
+  it('should re-arm and emit AnomalyDetected again after the source recovers within tolerance', async () => {
+    let now = 1_000_000;
+
+    for (let i = 0; i < config.anomaly.streakLength + 2; i += 1, now += 1) {
+      driftMockCycle(now);
+      await h.orchestrator.pulse(now);
+    }
+    expect(mockAnomalies()).toHaveLength(1);
+
+    // Source recovers within tolerance, re-arming the detector.
+    healthyCycle(now);
+    await h.orchestrator.pulse(now);
+    now += 1;
+
+    for (let i = 0; i < config.anomaly.streakLength; i += 1, now += 1) {
+      driftMockCycle(now);
+      await h.orchestrator.pulse(now);
+    }
+    expect(mockAnomalies()).toHaveLength(2);
   });
 
   it('should hydrate lastKnownAggregate per asset on start and serve it via getSnapshot', async () => {
