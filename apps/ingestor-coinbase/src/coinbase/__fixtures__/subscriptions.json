@@ -1,0 +1,7 @@
+{
+  "channel": "subscriptions",
+  "client_id": "",
+  "timestamp": "2026-05-21T19:00:00.000000Z",
+  "sequence_num": 0,
+  "events": [{ "subscriptions": { "market_trades": ["BTC-USD", "ETH-USD"] } }]
+}
