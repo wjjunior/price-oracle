@@ -8,7 +8,9 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@price-oracle/contracts": "workspace:*"
+    "@nats-io/nats-core": "^3.0.0",
+    "@price-oracle/contracts": "workspace:*",
+    "pino": "^9.5.0"
   },
   "devDependencies": {
     "fast-check": "^4.1.1",
