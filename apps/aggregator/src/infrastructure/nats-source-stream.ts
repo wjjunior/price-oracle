@@ -27,8 +27,6 @@ export class NatsSourceStream implements SourceStreamPort {
           );
           return;
         }
-        const tick = this.parseTick(this.decoder.decode(msg.data));
-        if (tick === null) return;
         const correlationId = msg.headers?.get(CORRELATION_HEADER);
         if (!correlationId) {
           this.logger.warn(
@@ -37,6 +35,8 @@ export class NatsSourceStream implements SourceStreamPort {
           );
           return;
         }
+        const tick = this.parseTick(this.decoder.decode(msg.data), correlationId);
+        if (tick === null) return;
         onTick(tick, correlationId);
       },
     });
@@ -45,13 +45,13 @@ export class NatsSourceStream implements SourceStreamPort {
     };
   }
 
-  private parseTick(raw: string): Tick | null {
+  private parseTick(raw: string, correlationId: string): Tick | null {
     let json: unknown;
     try {
       json = JSON.parse(raw);
     } catch {
       this.logger.warn(
-        { event: 'source-stream.malformed', payload: raw.slice(0, MAX_LOGGED_PAYLOAD) },
+        { event: 'source-stream.malformed', correlationId, payload: raw.slice(0, MAX_LOGGED_PAYLOAD) },
         'Dropping non-JSON tick payload',
       );
       return null;
@@ -61,6 +61,7 @@ export class NatsSourceStream implements SourceStreamPort {
       this.logger.warn(
         {
           event: 'source-stream.invalid',
+          correlationId,
           payload: raw.slice(0, MAX_LOGGED_PAYLOAD),
           issues: result.error.issues,
         },

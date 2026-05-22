@@ -64,10 +64,13 @@ describe('NatsSourceStream', () => {
     const logger = fakeLogger();
     new NatsSourceStream(nats.connection, logger).subscribe(onTick);
 
-    nats.emit(natsMsg({ asset: 'btc', source: 'binance', price: -1, receivedAt: 1 }));
+    nats.emit(natsMsg({ asset: 'btc', source: 'binance', price: -1, receivedAt: 1 }, 'corr-1'));
 
     expect(onTick).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ correlationId: 'corr-1' }),
+      expect.any(String),
+    );
   });
 
   it('should drop a non-JSON payload without throwing', () => {
@@ -76,7 +79,7 @@ describe('NatsSourceStream', () => {
     const logger = fakeLogger();
     new NatsSourceStream(nats.connection, logger).subscribe(onTick);
 
-    expect(() => nats.emit(natsMsg('not-json{'))).not.toThrow();
+    expect(() => nats.emit(natsMsg('not-json{', 'corr-1'))).not.toThrow();
     expect(onTick).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalled();
   });
