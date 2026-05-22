@@ -7,8 +7,14 @@ const MONGO_DB_NAME = 'price_oracle';
 export type Stack = {
   readonly mockUrl: string;
   readonly aggUrl: string;
+  stopMock: () => Promise<void>;
+  stopAggregator: () => Promise<void>;
+  startAggregator: () => Promise<void>;
   close: () => Promise<void>;
 };
+
+export const mongoUrlForTests = (mongoUrl: string): string =>
+  withDatabase(mongoUrl, MONGO_DB_NAME);
 
 const ENV_KEYS = [
   'NATS_URL',
@@ -91,6 +97,28 @@ export async function startStack(env: { natsUrl: string; mongoUrl: string }): Pr
     if (errors.length > 1) throw new AggregateError(errors, 'integration stack teardown failed');
   };
 
+  const bootAggregator = async (): Promise<void> => {
+    const { NestFactory } = await import('@nestjs/core');
+    const aggregatorModule = await import('../../apps/aggregator/src/interface/app.module.js');
+    aggApp = await NestFactory.create(aggregatorModule.AppModule, { logger: false });
+    aggApp.enableShutdownHooks();
+    await aggApp.listen(AGGREGATOR_HTTP_PORT);
+  };
+
+  const stopMock = async (): Promise<void> => {
+    await mockApp?.close();
+    mockApp = undefined;
+  };
+
+  const stopAggregator = async (): Promise<void> => {
+    await aggApp?.close();
+    aggApp = undefined;
+  };
+
+  const startAggregator = async (): Promise<void> => {
+    await bootAggregator();
+  };
+
   try {
     await import('reflect-metadata');
     const { NestFactory } = await import('@nestjs/core');
@@ -99,10 +127,7 @@ export async function startStack(env: { natsUrl: string; mongoUrl: string }): Pr
     mockApp = await NestFactory.create(mockModule.AppModule, { logger: false });
     await mockApp.listen(MOCK_HTTP_PORT);
 
-    const aggregatorModule = await import('../../apps/aggregator/src/interface/app.module.js');
-    aggApp = await NestFactory.create(aggregatorModule.AppModule, { logger: false });
-    aggApp.enableShutdownHooks();
-    await aggApp.listen(AGGREGATOR_HTTP_PORT);
+    await bootAggregator();
   } catch (err) {
     try {
       await close();
@@ -115,6 +140,9 @@ export async function startStack(env: { natsUrl: string; mongoUrl: string }): Pr
   return {
     mockUrl: `http://127.0.0.1:${MOCK_HTTP_PORT}`,
     aggUrl: `http://127.0.0.1:${AGGREGATOR_HTTP_PORT}`,
+    stopMock,
+    stopAggregator,
+    startAggregator,
     close,
   };
 }

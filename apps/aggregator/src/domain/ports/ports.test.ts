@@ -5,6 +5,7 @@ import { DIAGNOSE_PORT } from './diagnose.port.js';
 import { PUBLISH_PORT } from './publish.port.js';
 import { SOURCE_STREAM_PORT } from './source-stream.port.js';
 
+import type { AggregatePrice } from '../types.js';
 import type { AssetId } from '@price-oracle/contracts/primitives';
 
 describe('aggregator port tokens', () => {
@@ -20,5 +21,9 @@ describe('aggregator port tokens', () => {
 describe('AuditPort', () => {
   it('should parameterize lastKnownAggregate by asset', () => {
     expectTypeOf<AuditPort['lastKnownAggregate']>().parameters.toEqualTypeOf<[AssetId]>();
+  });
+
+  it('should record aggregate snapshots through the port', () => {
+    expectTypeOf<AuditPort['recordAggregate']>().parameters.toEqualTypeOf<[AggregatePrice]>();
   });
 });

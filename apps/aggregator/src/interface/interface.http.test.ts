@@ -34,6 +34,7 @@ const orchestrator = {
 const audit = {
   append: vi.fn().mockResolvedValue(undefined),
   recent: vi.fn().mockResolvedValue([]),
+  recordAggregate: vi.fn().mockResolvedValue(undefined),
   lastKnownAggregate: vi.fn().mockResolvedValue(null),
 };
 

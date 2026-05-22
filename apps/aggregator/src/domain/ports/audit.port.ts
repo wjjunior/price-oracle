@@ -5,6 +5,7 @@ import type { AssetId } from '@price-oracle/contracts/primitives';
 export interface AuditPort {
   append(event: AuditEvent): Promise<void>;
   recent(limit: number, asset?: AssetId): Promise<readonly AuditEvent[]>;
+  recordAggregate(aggregate: AggregatePrice): Promise<void>;
   lastKnownAggregate(asset: AssetId): Promise<AggregatePrice | null>;
 }
 

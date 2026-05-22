@@ -42,8 +42,9 @@ const setup = (diagnoseImpl: DiagnosePort['diagnose']): Harness => {
     appended.push(e);
   });
   const recent = vi.fn<AuditPort['recent']>().mockResolvedValue([]);
+  const recordAggregate = vi.fn<AuditPort['recordAggregate']>().mockResolvedValue(undefined);
   const lastKnownAggregate = vi.fn<AuditPort['lastKnownAggregate']>().mockResolvedValue(null);
-  const audit: AuditPort = { append, recent, lastKnownAggregate };
+  const audit: AuditPort = { append, recent, recordAggregate, lastKnownAggregate };
   const diagnose = vi.fn<DiagnosePort['diagnose']>(diagnoseImpl);
   const port: DiagnosePort = { diagnose };
   const controller = new DiagnoseController(fakeOrchestrator(), port, audit, makeLogger());
