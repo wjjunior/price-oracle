@@ -16,7 +16,11 @@ function AssetGroup({ asset, now }: { readonly asset: AssetId; readonly now: Mil
       {rows.length === 0 ? (
         <span className="text-sm text-muted-foreground">No sources reporting</span>
       ) : (
-        rows.map((source) => <SourceRow key={source.source} state={source} now={now} />)
+        <div className="flex flex-col divide-y divide-border">
+          {rows.map((source) => (
+            <SourceRow key={source.source} state={source} now={now} />
+          ))}
+        </div>
       )}
     </Card>
   );

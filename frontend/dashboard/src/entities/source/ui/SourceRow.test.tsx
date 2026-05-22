@@ -25,9 +25,9 @@ describe('SourceRow', () => {
     expect(screen.getByText('$65,000.00')).toBeInTheDocument();
   });
 
-  it('should color the health pill from the typed health enum', () => {
+  it('should color the health label from the typed health enum', () => {
     render(<SourceRow state={sourceState({ health: 'STALE' })} now={1_050} />);
-    expect(screen.getByText('STALE').className).toContain('bg-stale');
+    expect(screen.getByText('STALE').className).toContain('text-stale');
   });
 
   it('should render placeholders for a never-seen source without crashing', () => {

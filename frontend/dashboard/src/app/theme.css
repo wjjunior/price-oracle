@@ -29,6 +29,9 @@
   --degraded-foreground: oklch(0.2 0.04 80);
   --stale: oklch(0.57 0.2 27);
   --stale-foreground: oklch(0.99 0 0);
+  --brand: #033d4b;
+  --brand-light: #055a6d;
+  --brand-cyan: #00c9c8;
   --radius: 0.5rem;
   --radius-md: 0.375rem;
 }
@@ -59,6 +62,9 @@
   --degraded-foreground: oklch(0.2 0.04 80);
   --stale: oklch(0.64 0.2 27);
   --stale-foreground: oklch(0.99 0 0);
+  --brand: #22b8cf;
+  --brand-light: #4dd0e1;
+  --brand-cyan: #00c9c8;
 }
 
 @theme inline {
@@ -87,6 +93,9 @@
   --color-degraded-foreground: var(--degraded-foreground);
   --color-stale: var(--stale);
   --color-stale-foreground: var(--stale-foreground);
+  --color-brand: var(--brand);
+  --color-brand-light: var(--brand-light);
+  --color-brand-cyan: var(--brand-cyan);
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius);

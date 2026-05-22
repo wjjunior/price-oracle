@@ -16,6 +16,13 @@ describe('formatTrendValue', () => {
   it('should unwrap an array value before formatting', () => {
     expect(formatTrendValue([0.6], 'confidence')).toEqual(['60.0%', 'Confidence']);
   });
+
+  it('should format the uncertainty band as a currency range', () => {
+    expect(formatTrendValue([59_000, 61_000], 'band')).toEqual([
+      `${formatCurrency(59_000)} – ${formatCurrency(61_000)}`,
+      'Uncertainty',
+    ]);
+  });
 });
 
 describe('formatTrendTime', () => {

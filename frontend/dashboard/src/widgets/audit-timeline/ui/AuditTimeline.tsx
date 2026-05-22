@@ -4,8 +4,9 @@ import type { AuditEvent } from '@price-oracle/contracts/events';
 import type { AssetId, Millis } from '@price-oracle/contracts/primitives';
 
 import { AuditRow, auditEventKey, useAuditEvents } from '@/entities/audit-event';
-import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
+import { ScrollArea } from '@/shared/ui/scroll-area';
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 
 type Filter = 'all' | AssetId;
 const FILTERS: readonly Filter[] = ['all', 'btc', 'eth'];
@@ -20,30 +21,31 @@ export function AuditTimeline({ now }: { readonly now: Millis }): JSX.Element {
   const events = useAuditEvents();
   const visible = events.filter((event) => matchesFilter(event, filter));
 
+  const onValueChange = (value: string): void => {
+    const next = FILTERS.find((option) => option === value);
+    if (next) setFilter(next);
+  };
+
   return (
     <Card data-slot="audit-timeline" className="gap-3 p-4">
-      <div data-slot="audit-filter" className="flex gap-1">
-        {FILTERS.map((option) => (
-          <Button
-            key={option}
-            size="sm"
-            variant={option === filter ? 'default' : 'outline'}
-            aria-pressed={option === filter}
-            onClick={() => setFilter(option)}
-          >
-            {option.toUpperCase()}
-          </Button>
-        ))}
-      </div>
-      <div data-slot="audit-list" className="flex max-h-80 flex-col gap-1 overflow-y-auto pr-1">
-        {visible.length === 0 ? (
-          <span className="text-sm text-muted-foreground">No events yet.</span>
-        ) : (
-          visible.map((event) => (
-            <AuditRow key={auditEventKey(event)} event={event} now={now} />
-          ))
-        )}
-      </div>
+      <Tabs value={filter} onValueChange={onValueChange}>
+        <TabsList data-slot="audit-filter" className="w-full">
+          {FILTERS.map((option) => (
+            <TabsTrigger key={option} value={option} className="flex-1">
+              {option.toUpperCase()}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+      <ScrollArea data-slot="audit-list" className="h-80 pr-3">
+        <div className="flex flex-col gap-1">
+          {visible.length === 0 ? (
+            <span className="text-sm text-muted-foreground">No events yet.</span>
+          ) : (
+            visible.map((event) => <AuditRow key={auditEventKey(event)} event={event} now={now} />)
+          )}
+        </div>
+      </ScrollArea>
     </Card>
   );
 }

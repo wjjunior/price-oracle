@@ -1,7 +1,9 @@
+import { SparklesIcon } from 'lucide-react';
 import { lazy, Suspense, type JSX } from 'react';
 
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
+import { ScrollArea } from '@/shared/ui/scroll-area';
 import { Skeleton } from '@/shared/ui/skeleton';
 
 const Markdown = lazy(() => import('react-markdown'));
@@ -18,8 +20,17 @@ export function DiagnoseCard(props: DiagnoseCardProps): JSX.Element {
   return (
     <Card data-slot="diagnose-card" className="gap-3 p-4">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">Diagnose</span>
-        <Button size="sm" onClick={props.onRequest} disabled={props.state === 'loading'}>
+        <span className="flex items-center gap-1.5 text-sm font-medium">
+          <SparklesIcon className="size-4 text-brand-cyan" aria-hidden />
+          Diagnose
+        </span>
+        <Button
+          size="sm"
+          className="gap-1.5"
+          onClick={props.onRequest}
+          disabled={props.state === 'loading'}
+        >
+          <SparklesIcon className="size-3.5" aria-hidden />
           Diagnose
         </Button>
       </div>
@@ -35,14 +46,14 @@ export function DiagnoseCard(props: DiagnoseCardProps): JSX.Element {
         </div>
       ) : null}
       {props.state === 'answered' ? (
-        <div
+        <ScrollArea
           data-slot="diagnose-markdown"
-          className="max-h-64 overflow-y-auto pr-1 text-sm [&_h2]:mb-1 [&_h2]:font-semibold"
+          className="h-64 pr-3 text-sm [&_h2]:mb-1 [&_h2]:font-semibold"
         >
           <Suspense fallback={<Skeleton className="h-4 w-full" />}>
             <Markdown>{props.markdown}</Markdown>
           </Suspense>
-        </div>
+        </ScrollArea>
       ) : null}
     </Card>
   );

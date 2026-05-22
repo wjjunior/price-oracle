@@ -1,4 +1,4 @@
-import { BugIcon, RotateCcwIcon, SnowflakeIcon, UnplugIcon, type LucideIcon } from 'lucide-react';
+import { AlertCircleIcon, ClockIcon, RotateCcwIcon, WifiOffIcon, type LucideIcon } from 'lucide-react';
 
 import { CHAOS_SCENARIOS, type ChaosScenario } from '../model/scenario.js';
 
@@ -19,17 +19,17 @@ type ScenarioMeta = {
 
 const SCENARIO_META: Record<ChaosScenario, ScenarioMeta> = {
   disconnect: {
-    Icon: UnplugIcon,
+    Icon: WifiOffIcon,
     title: 'Stop publishing — the source ages to STALE and drops out of coverage.',
     variant: 'destructive',
   },
   stale: {
-    Icon: SnowflakeIcon,
+    Icon: ClockIcon,
     title: 'Freeze the price but keep publishing — the source stays HEALTHY and triggers an anomaly.',
     variant: 'outline',
   },
   malformed: {
-    Icon: BugIcon,
+    Icon: AlertCircleIcon,
     title: 'Publish invalid payloads — dropped at the validation boundary; the source ages to STALE.',
     variant: 'destructive',
   },

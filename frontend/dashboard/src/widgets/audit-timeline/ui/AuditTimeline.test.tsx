@@ -23,7 +23,7 @@ describe('AuditTimeline', () => {
     expect(screen.getByText('binance HEALTHY → DEGRADED')).toBeInTheDocument();
     expect(screen.getByText('mock HEALTHY → STALE')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'ETH' }));
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'ETH' }));
 
     expect(screen.queryByText('binance HEALTHY → DEGRADED')).toBeNull();
     expect(screen.getByText('mock HEALTHY → STALE')).toBeInTheDocument();

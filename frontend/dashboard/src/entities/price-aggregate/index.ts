@@ -7,3 +7,4 @@ export {
   loadPriceSnapshot,
 } from './api/price-aggregate-api.js';
 export { Price } from './ui/Price.js';
+export { ConfidenceBar } from './ui/ConfidenceBar.js';

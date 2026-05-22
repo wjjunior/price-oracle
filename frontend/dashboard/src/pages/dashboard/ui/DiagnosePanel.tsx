@@ -3,7 +3,7 @@ import { useState, type JSX } from 'react';
 import type { AssetId } from '@price-oracle/contracts/primitives';
 
 import { useRequestDiagnose } from '@/features/request-diagnose';
-import { Button } from '@/shared/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { DiagnoseCard } from '@/widgets/diagnose-card';
 
 const ASSETS: readonly AssetId[] = ['btc', 'eth'];
@@ -18,24 +18,24 @@ export function DiagnosePanel(): JSX.Element {
     reset();
   };
 
+  const onValueChange = (value: string): void => {
+    const next = ASSETS.find((option) => option === value);
+    if (next) selectAsset(next);
+  };
+
   const loading = view.state === 'loading';
 
   return (
     <div data-slot="diagnose-panel" className="flex flex-col gap-3">
-      <div data-slot="diagnose-asset" className="flex gap-1">
-        {ASSETS.map((option) => (
-          <Button
-            key={option}
-            size="sm"
-            variant={option === asset ? 'default' : 'outline'}
-            aria-pressed={option === asset}
-            disabled={loading}
-            onClick={() => selectAsset(option)}
-          >
-            {option.toUpperCase()}
-          </Button>
-        ))}
-      </div>
+      <Tabs value={asset} onValueChange={onValueChange}>
+        <TabsList data-slot="diagnose-asset" className="w-full">
+          {ASSETS.map((option) => (
+            <TabsTrigger key={option} value={option} disabled={loading} className="flex-1">
+              {option.toUpperCase()}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
       <DiagnoseCard {...view} onRequest={() => request(asset)} />
     </div>
   );

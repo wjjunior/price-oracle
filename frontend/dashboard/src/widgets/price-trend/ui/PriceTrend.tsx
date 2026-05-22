@@ -1,5 +1,16 @@
-import { Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  ComposedChart,
+  Legend,
+  Line,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
+import { toBandSeries } from '../model/confidence-band.js';
 import { formatTrendTime, formatTrendValue } from '../model/format-trend.js';
 
 import type { AssetId } from '@price-oracle/contracts/primitives';
@@ -14,27 +25,35 @@ const ASSETS: readonly AssetId[] = ['btc', 'eth'];
 const BREAKER_FLOOR = 0.6;
 
 const TREND_COLOR = {
-  confidence: '#34d399',
-  price: '#64748b',
-  floor: '#f59e0b',
+  band: 'var(--brand-cyan)',
+  price: 'var(--brand)',
+  confidence: 'var(--healthy)',
+  floor: 'var(--degraded)',
 } as const;
+
+const LEGEND_LABELS: Record<string, string> = {
+  band: 'Uncertainty',
+  price: 'Price',
+  confidence: 'Confidence',
+};
 
 function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
   const points = usePriceHistory(asset);
+  const series = toBandSeries(points);
 
   return (
     <Card data-slot="price-trend" data-asset={asset} className="gap-1 p-4">
       <span className="text-xs font-medium uppercase text-muted-foreground">
         {asset} — confidence &amp; price
       </span>
-      <div className="h-28">
-        {points.length === 0 ? (
+      <div className="h-44">
+        {series.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             Waiting for data…
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={points} margin={{ top: 6, right: 4, bottom: 0, left: -28 }}>
+            <ComposedChart data={series} margin={{ top: 6, right: 4, bottom: 0, left: -28 }}>
               <XAxis dataKey="t" hide />
               <YAxis yAxisId="confidence" domain={[0, 1]} hide />
               <YAxis yAxisId="price" orientation="right" domain={['auto', 'auto']} hide />
@@ -49,12 +68,26 @@ function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
                 formatter={formatTrendValue}
                 labelFormatter={formatTrendTime}
               />
+              <Legend
+                iconType="plainline"
+                wrapperStyle={{ fontSize: 11 }}
+                formatter={(value: string) => LEGEND_LABELS[value] ?? value}
+              />
+              <Area
+                yAxisId="price"
+                type="monotone"
+                dataKey="band"
+                stroke="none"
+                fill={TREND_COLOR.band}
+                fillOpacity={0.18}
+                isAnimationActive={false}
+              />
               <Line
                 yAxisId="price"
                 type="monotone"
                 dataKey="price"
                 stroke={TREND_COLOR.price}
-                strokeWidth={1}
+                strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
               />
@@ -63,11 +96,12 @@ function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
                 type="monotone"
                 dataKey="confidence"
                 stroke={TREND_COLOR.confidence}
-                strokeWidth={2}
+                strokeWidth={1.5}
+                strokeDasharray="3 2"
                 dot={false}
                 isAnimationActive={false}
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         )}
       </div>

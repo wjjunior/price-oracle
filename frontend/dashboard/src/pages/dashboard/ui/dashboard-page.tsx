@@ -1,12 +1,13 @@
+import { ActivityIcon, ClockIcon } from 'lucide-react';
 import { lazy, Suspense, type JSX } from 'react';
 
 import { useDashboardData } from '../model/use-dashboard-data.js';
 
 import { DiagnosePanel } from './DiagnosePanel.js';
 
-
 import { InjectFailureDialog, useInjectFailure } from '@/features/inject-failure';
 import { useNow } from '@/shared/lib/use-now';
+import { ThemeToggle } from '@/shared/ui/theme-toggle';
 import { AuditTimeline } from '@/widgets/audit-timeline';
 import { ChaosControls } from '@/widgets/chaos-controls';
 import { PriceOverview } from '@/widgets/price-overview';
@@ -24,19 +25,31 @@ export function DashboardPage(): JSX.Element {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:py-10">
-        <header className="flex flex-col gap-1">
-          <div className="flex items-center justify-between gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">Price Oracle</h1>
+      <div className="mx-auto flex max-w-[1800px] flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 items-center justify-center rounded-lg bg-brand text-white">
+              <ActivityIcon className="size-5" aria-hidden />
+            </span>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-semibold tracking-tight">Price Oracle</h1>
+              <p className="text-xs text-muted-foreground">
+                Confidence-aware multi-source price feed
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
             {reconnecting ? (
               <span data-slot="sse-status" className="text-xs font-medium text-degraded">
                 Reconnecting…
               </span>
             ) : null}
+            <span className="flex items-center gap-1.5 text-sm tabular-nums text-muted-foreground">
+              <ClockIcon className="size-4" aria-hidden />
+              {new Date(now).toLocaleTimeString()}
+            </span>
+            <ThemeToggle />
           </div>
-          <p className="text-sm text-muted-foreground">
-            Confidence-aware multi-source price feed — operator dashboard
-          </p>
         </header>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-3">
