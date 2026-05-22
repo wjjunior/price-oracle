@@ -1,10 +1,10 @@
-import Markdown from 'react-markdown';
-
-import type { JSX } from 'react';
+import { lazy, Suspense, type JSX } from 'react';
 
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Skeleton } from '@/shared/ui/skeleton';
+
+const Markdown = lazy(() => import('react-markdown'));
 
 export type DiagnoseState = 'empty' | 'loading' | 'answered';
 
@@ -36,7 +36,9 @@ export function DiagnoseCard(props: DiagnoseCardProps): JSX.Element {
       ) : null}
       {props.state === 'answered' ? (
         <div data-slot="diagnose-markdown" className="text-sm [&_h2]:mb-1 [&_h2]:font-semibold">
-          <Markdown>{props.markdown}</Markdown>
+          <Suspense fallback={<Skeleton className="h-4 w-full" />}>
+            <Markdown>{props.markdown}</Markdown>
+          </Suspense>
         </div>
       ) : null}
     </Card>
