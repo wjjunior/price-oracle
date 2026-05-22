@@ -46,7 +46,7 @@ export class MongoAudit implements AuditPort {
 
   async append(event: AuditEvent): Promise<void> {
     try {
-      await this.auditEvents.insertOne(event);
+      await this.auditEvents.insertOne({ ...event });
     } catch (error) {
       if (error instanceof MongoServerError && error.code === DUPLICATE_KEY_CODE) {
         return;

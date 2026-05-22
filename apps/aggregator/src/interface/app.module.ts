@@ -70,7 +70,7 @@ const sharedLogger = pino({
     {
       provide: MONGO_CLIENT,
       useFactory: async (cfg: AggregatorConfig): Promise<MongoClientType> => {
-        const client = new MongoClient(cfg.mongoUrl);
+        const client = new MongoClient(cfg.mongoUrl, { ignoreUndefined: true });
         await client.connect();
         return client;
       },

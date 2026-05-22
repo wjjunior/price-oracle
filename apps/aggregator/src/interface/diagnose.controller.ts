@@ -4,6 +4,7 @@ import { inspect } from 'node:util';
 import {
   Body,
   Controller,
+  HttpCode,
   HttpException,
   HttpStatus,
   Inject,
@@ -50,6 +51,7 @@ export class DiagnoseController {
   ) {}
 
   @Post('diagnose')
+  @HttpCode(HttpStatus.OK)
   async requestDiagnose(
     @Query('asset', AssetParamPipe) asset: AssetId,
     @Body(DiagnoseBodyPipe) body: PostDiagnoseRequest,

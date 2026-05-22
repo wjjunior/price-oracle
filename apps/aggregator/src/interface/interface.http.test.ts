@@ -87,7 +87,7 @@ describe('Aggregator HTTP', () => {
   });
 
   it('should respond 200 to POST /api/diagnose?asset=btc', () => {
-    return request(app.getHttpServer()).post('/api/diagnose?asset=btc').send({}).expect(201);
+    return request(app.getHttpServer()).post('/api/diagnose?asset=btc').send({}).expect(200);
   });
 
   it('should respond 429 when diagnose is rate limited', () => {
