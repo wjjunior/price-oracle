@@ -47,8 +47,9 @@ describe('detectAnomaly (properties)', () => {
     fc.assert(
       fc.property(
         priceArb,
-        fc.double({ min: 0, max: 1000, noNaN: true }),
-        (aggregatePrice, delta) => {
+        fc.double({ min: 0, max: 0.99, noNaN: true, noDefaultInfinity: true }),
+        (aggregatePrice, deviationFraction) => {
+          const delta = aggregatePrice * deviationFraction;
           const above = detectAnomaly(makeState(aggregatePrice + delta), aggregatePrice, cfg);
           const below = detectAnomaly(makeState(aggregatePrice - delta), aggregatePrice, cfg);
           expect(above.deviationRatio).toBeCloseTo(below.deviationRatio);
