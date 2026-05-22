@@ -30,9 +30,11 @@ function realClient(apiKey: string): AnthropicLike {
 
 export function createDiagnosePort(deps: CreateDiagnosePortDeps = {}): DiagnosePort {
   const clock = deps.clock ?? Date.now;
-  const inner: DiagnosePort =
-    deps.apiKey !== undefined
-      ? new AnthropicDiagnoseAdapter(deps.client ?? realClient(deps.apiKey), clock)
-      : new StubDiagnoseAdapter(clock);
+  let inner: DiagnosePort;
+  if (deps.apiKey) {
+    inner = new AnthropicDiagnoseAdapter(deps.client ?? realClient(deps.apiKey), clock);
+  } else {
+    inner = new StubDiagnoseAdapter(clock);
+  }
   return new RateLimitedDiagnose(inner, clock);
 }
