@@ -352,4 +352,31 @@ describe('Orchestrator', () => {
     );
     expect(h.publisher.calls.some((c) => c.aggregate.asset === 'btc')).toBe(true);
   });
+
+  it('should return the per-asset source states via getSourceStates after routing ticks', () => {
+    feedHealthy(h.orchestrator, 'btc', config.sources, 50_000, 1_000_000);
+
+    const states = h.orchestrator.getSourceStates('btc');
+    expect(states.map((s) => s.source).sort()).toEqual([...config.sources].sort());
+    expect(states.every((s) => s.asset === 'btc')).toBe(true);
+    expect(states.some((s) => s.lastPrice === 50_000)).toBe(true);
+  });
+
+  it('should return an empty array from getSourceStates for an unknown asset', () => {
+    expect(h.orchestrator.getSourceStates('sol' as AssetId)).toEqual([]);
+  });
+
+  it('should reflect breaker transitions via getBreakerState', async () => {
+    expect(h.orchestrator.getBreakerState('btc')).toBe('CLOSED');
+
+    for (let i = 0; i < config.breaker.tripStreak; i += 1) {
+      await h.orchestrator.pulse(1_000_000 + i);
+    }
+
+    expect(h.orchestrator.getBreakerState('btc')).toBe('OPEN');
+  });
+
+  it('should return CLOSED from getBreakerState for an unknown asset', () => {
+    expect(h.orchestrator.getBreakerState('sol' as AssetId)).toBe('CLOSED');
+  });
 });
