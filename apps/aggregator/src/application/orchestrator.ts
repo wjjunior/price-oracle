@@ -131,7 +131,7 @@ export class Orchestrator {
 
   routeTick(tick: Tick, correlationId: CorrelationId): void {
     const runtime = this.runtime.get(tick.asset);
-    if (!runtime || !runtime.sources.has(tick.source)) {
+    if (!runtime?.sources.has(tick.source)) {
       this.deps.logger.warn(
         { event: 'orchestrator.unknown-tick', asset: tick.asset, sourceId: tick.source, correlationId },
         'Dropping tick for unknown asset or source',
