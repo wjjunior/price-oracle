@@ -46,11 +46,14 @@ export function useRequestDiagnose(): UseRequestDiagnose {
     });
   };
 
-  const view: DiagnoseView = mutation.isPending
-    ? { state: 'loading' }
-    : mutation.data !== undefined
-      ? { state: 'answered', markdown: mutation.data }
-      : { state: 'empty' };
+  let view: DiagnoseView;
+  if (mutation.isPending) {
+    view = { state: 'loading' };
+  } else if (mutation.isSuccess) {
+    view = { state: 'answered', markdown: mutation.data };
+  } else {
+    view = { state: 'empty' };
+  }
 
   return { view, request, reset: () => mutation.reset() };
 }
