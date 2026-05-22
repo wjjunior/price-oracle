@@ -23,7 +23,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe('applyAggregateEnvelope', () => {
   it('should push an aggregate SSE envelope into the store under its asset', () => {
-    const envelope: SseEnvelope = {
+    const envelope: Extract<SseEnvelope, { type: 'aggregate' }> = {
       type: 'aggregate',
       asset: 'eth',
       data: aggregate('eth', 3_400),
