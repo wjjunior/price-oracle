@@ -22,11 +22,11 @@ const fakeMongo = (reads: { recent?: unknown[]; snapshot?: unknown } = {}) => {
   const insertOne = vi.fn(async () => ({}));
   const find = vi.fn(() => cursor);
   const findOne = vi.fn(async () => reads.snapshot ?? null);
-  const updateOne = vi.fn(async () => ({}));
-  const createIndex = vi.fn(async () => 'uniq_type_asset_at');
-  const collection = vi.fn(() => ({ insertOne, find, findOne, updateOne, createIndex }));
+  const replaceOne = vi.fn(async () => ({}));
+  const createIndex = vi.fn(async () => 'uniq_type_asset_source_at');
+  const collection = vi.fn(() => ({ insertOne, find, findOne, replaceOne, createIndex }));
   const db = { collection } as unknown as Db;
-  return { db, insertOne, find, findOne, updateOne, createIndex, cursor };
+  return { db, insertOne, find, findOne, replaceOne, createIndex, cursor };
 };
 
 const fakeLogger = () => ({ warn: vi.fn(), debug: vi.fn() }) as unknown as Logger;
@@ -62,9 +62,7 @@ describe('MongoAudit', () => {
     );
     const logger = fakeLogger();
 
-    await expect(
-      new MongoAudit(mongo.db, logger).append(auditEvent),
-    ).resolves.toBeUndefined();
+    await expect(new MongoAudit(mongo.db, logger).append(auditEvent)).resolves.toBeUndefined();
     expect(logger.warn).not.toHaveBeenCalled();
   });
 
@@ -73,11 +71,9 @@ describe('MongoAudit', () => {
     mongo.insertOne.mockRejectedValueOnce(new Error('connection lost'));
     const logger = fakeLogger();
 
-    await expect(
-      new MongoAudit(mongo.db, logger).append(auditEvent),
-    ).resolves.toBeUndefined();
+    await expect(new MongoAudit(mongo.db, logger).append(auditEvent)).resolves.toBeUndefined();
     expect(logger.warn).toHaveBeenCalledWith(
-      expect.objectContaining({ event: 'audit.append-failed' }),
+      expect.objectContaining({ event: 'audit.append-failed', error: 'connection lost' }),
       expect.any(String),
     );
   });
@@ -98,19 +94,40 @@ describe('MongoAudit', () => {
     expect(mongo.find).toHaveBeenCalledWith({}, { projection: { _id: 0 } });
   });
 
-  it('should upsert the aggregate snapshot keyed by asset on recordAggregate', async () => {
+  it('should skip an invalid audit document and warn with the validation issues', async () => {
+    const mongo = fakeMongo({ recent: [{ type: 'NotAnEvent', asset: 'btc' }, auditEvent] });
+    const logger = fakeLogger();
+    const result = await new MongoAudit(mongo.db, logger).recent(10);
+
+    expect(result).toEqual([auditEvent]);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'audit.read-invalid', issues: expect.any(Array) }),
+      expect.any(String),
+    );
+  });
+
+  it('should warn and return an empty array when the recent query fails', async () => {
+    const mongo = fakeMongo();
+    mongo.cursor.toArray.mockRejectedValueOnce(new Error('read outage'));
+    const logger = fakeLogger();
+
+    const result = await new MongoAudit(mongo.db, logger).recent(10);
+    expect(result).toEqual([]);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'audit.read-failed', error: 'read outage' }),
+      expect.any(String),
+    );
+  });
+
+  it('should replace the aggregate snapshot keyed by asset on recordAggregate', async () => {
     const mongo = fakeMongo();
     await new MongoAudit(mongo.db, fakeLogger()).recordAggregate(aggregate);
-    expect(mongo.updateOne).toHaveBeenCalledWith(
-      { asset: 'btc' },
-      { $set: aggregate },
-      { upsert: true },
-    );
+    expect(mongo.replaceOne).toHaveBeenCalledWith({ asset: 'btc' }, aggregate, { upsert: true });
   });
 
   it('should warn and not throw when recordAggregate fails', async () => {
     const mongo = fakeMongo();
-    mongo.updateOne.mockRejectedValueOnce(new Error('connection lost'));
+    mongo.replaceOne.mockRejectedValueOnce(new Error('connection lost'));
     const logger = fakeLogger();
 
     await expect(
@@ -135,12 +152,36 @@ describe('MongoAudit', () => {
     expect(result).toBeNull();
   });
 
-  it('should create a unique index on (type, asset, at) in ensureIndexes', async () => {
+  it('should return null and warn when the stored snapshot is invalid', async () => {
+    const mongo = fakeMongo({ snapshot: { asset: 'btc', price: 1 } });
+    const logger = fakeLogger();
+    const result = await new MongoAudit(mongo.db, logger).lastKnownAggregate('btc');
+
+    expect(result).toBeNull();
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'audit.read-invalid', asset: 'btc' }),
+      expect.any(String),
+    );
+  });
+
+  it('should create a unique index on (type, asset, source, at) in ensureIndexes', async () => {
     const mongo = fakeMongo();
     await new MongoAudit(mongo.db, fakeLogger()).ensureIndexes();
     expect(mongo.createIndex).toHaveBeenCalledWith(
-      { type: 1, asset: 1, at: 1 },
-      expect.objectContaining({ unique: true, name: 'uniq_type_asset_at' }),
+      { type: 1, asset: 1, source: 1, at: 1 },
+      expect.objectContaining({ unique: true, name: 'uniq_type_asset_source_at' }),
+    );
+  });
+
+  it('should warn and not throw when index creation fails at boot', async () => {
+    const mongo = fakeMongo();
+    mongo.createIndex.mockRejectedValueOnce(new Error('mongo down'));
+    const logger = fakeLogger();
+
+    await expect(new MongoAudit(mongo.db, logger).ensureIndexes()).resolves.toBeUndefined();
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'audit.ensure-indexes-failed', error: 'mongo down' }),
+      expect.any(String),
     );
   });
 });

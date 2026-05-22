@@ -10,8 +10,11 @@ import type { Logger } from 'pino';
 
 const AUDIT_EVENTS_COLLECTION = 'audit_events';
 const AGGREGATE_SNAPSHOTS_COLLECTION = 'aggregate_snapshots';
-const AUDIT_INDEX_NAME = 'uniq_type_asset_at';
+const AUDIT_INDEX_NAME = 'uniq_type_asset_source_at';
 const DUPLICATE_KEY_CODE = 11_000;
+
+const errorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
 
 export class MongoAudit implements AuditPort {
   private readonly auditEvents: Collection<Document>;
@@ -26,10 +29,17 @@ export class MongoAudit implements AuditPort {
   }
 
   async ensureIndexes(): Promise<void> {
-    await this.auditEvents.createIndex(
-      { type: 1, asset: 1, at: 1 },
-      { unique: true, name: AUDIT_INDEX_NAME },
-    );
+    try {
+      await this.auditEvents.createIndex(
+        { type: 1, asset: 1, source: 1, at: 1 },
+        { unique: true, name: AUDIT_INDEX_NAME },
+      );
+    } catch (error) {
+      this.logger.warn(
+        { event: 'audit.ensure-indexes-failed', error: errorMessage(error) },
+        'Audit index creation failed',
+      );
+    }
   }
 
   async append(event: AuditEvent): Promise<void> {
@@ -40,7 +50,12 @@ export class MongoAudit implements AuditPort {
         return;
       }
       this.logger.warn(
-        { event: 'audit.append-failed', type: event.type, asset: event.asset, error },
+        {
+          event: 'audit.append-failed',
+          type: event.type,
+          asset: event.asset,
+          error: errorMessage(error),
+        },
         'Audit append failed',
       );
     }
@@ -61,25 +76,33 @@ export class MongoAudit implements AuditPort {
           events.push(parsed.data);
           continue;
         }
-        this.logger.warn({ event: 'audit.read-invalid' }, 'Skipping invalid audit document');
+        this.logger.warn(
+          { event: 'audit.read-invalid', issues: parsed.error.issues },
+          'Skipping invalid audit document',
+        );
       }
       return events;
     } catch (error) {
-      this.logger.warn({ event: 'audit.read-failed', error }, 'Audit read failed');
+      this.logger.warn(
+        { event: 'audit.read-failed', error: errorMessage(error) },
+        'Audit read failed',
+      );
       return [];
     }
   }
 
   async recordAggregate(aggregate: AggregatePrice): Promise<void> {
     try {
-      await this.aggregateSnapshots.updateOne(
-        { asset: aggregate.asset },
-        { $set: aggregate },
-        { upsert: true },
-      );
+      await this.aggregateSnapshots.replaceOne({ asset: aggregate.asset }, aggregate, {
+        upsert: true,
+      });
     } catch (error) {
       this.logger.warn(
-        { event: 'audit.record-aggregate-failed', asset: aggregate.asset, error },
+        {
+          event: 'audit.record-aggregate-failed',
+          asset: aggregate.asset,
+          error: errorMessage(error),
+        },
         'Aggregate snapshot record failed',
       );
     }
@@ -96,12 +119,15 @@ export class MongoAudit implements AuditPort {
         return parsed.data;
       }
       this.logger.warn(
-        { event: 'audit.read-invalid', asset },
+        { event: 'audit.read-invalid', asset, issues: parsed.error.issues },
         'Skipping invalid aggregate snapshot',
       );
       return null;
     } catch (error) {
-      this.logger.warn({ event: 'audit.read-failed', asset, error }, 'Aggregate snapshot read failed');
+      this.logger.warn(
+        { event: 'audit.read-failed', asset, error: errorMessage(error) },
+        'Aggregate snapshot read failed',
+      );
       return null;
     }
   }
