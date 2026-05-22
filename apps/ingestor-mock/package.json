@@ -1,0 +1,33 @@
+{
+  "name": "@price-oracle/ingestor-mock",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@nats-io/nats-core": "^3.0.0",
+    "@nats-io/transport-node": "^3.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@price-oracle/contracts": "workspace:*",
+    "nestjs-pino": "^4.4.0",
+    "pino": "^9.5.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^11.0.0",
+    "@types/node": "^22.10.0",
+    "@types/supertest": "^6.0.3",
+    "supertest": "^7.2.2",
+    "tsx": "^4.20.0",
+    "vitest": "^4.1.6"
+  }
+}
