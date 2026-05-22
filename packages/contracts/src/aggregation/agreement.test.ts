@@ -26,4 +26,12 @@ describe('computeAgreement', () => {
   it('should clamp to 0 when dispersion exceeds the mean', () => {
     expect(computeAgreement([1, 1, 100])).toBe(0);
   });
+
+  it('should return 0 when the mean of the input prices is non-positive', () => {
+    // Price type is positive by contract, but the function defensively guards against
+    // non-positive means. Exercising this branch ensures correctness if prices
+    // ever contain zero or negative values (e.g. during fuzz testing).
+    // Use [-1, 0, 1]: min != max so the early return is skipped; mean = 0 triggers the guard.
+    expect(computeAgreement([-1, 0, 1] as unknown as number[])).toBe(0);
+  });
 });
