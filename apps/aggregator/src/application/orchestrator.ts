@@ -346,7 +346,10 @@ export class Orchestrator {
       at: now,
     });
     this.emit({ type: 'audit', data: event, correlationId });
-    this.emit({ type: 'source-health', asset, data: next, correlationId });
+    // pulse-driven (tick=null) transitions are already streamed by emitSourceFreshness this pulse
+    if (tick !== null) {
+      this.emit({ type: 'source-health', asset, data: next, correlationId });
+    }
     void this.appendAudit(event, correlationId);
   }
 
