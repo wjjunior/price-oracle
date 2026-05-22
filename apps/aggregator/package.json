@@ -8,6 +8,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.97.1",
     "@price-oracle/contracts": "workspace:*",
     "zod": "^4.4.3"
   },
