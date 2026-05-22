@@ -42,7 +42,15 @@ const OrchestratorEnvSchema = z.object({
   BREAKER_HALF_OPEN_PROBE_STREAK: z.coerce.number().int().positive().default(4),
   ANOMALY_DRIFT_TOLERANCE: z.coerce.number().nonnegative().default(2),
   ANOMALY_STREAK_LENGTH: z.coerce.number().int().positive().default(6),
-});
+})
+  .refine((v) => v.DEGRADED_AFTER_MS <= v.STALE_AFTER_MS, {
+    error: 'DEGRADED_AFTER_MS must be <= STALE_AFTER_MS',
+    path: ['DEGRADED_AFTER_MS'],
+  })
+  .refine((v) => v.STALE_AFTER_MS <= v.FRESHNESS_DECAY_MS, {
+    error: 'STALE_AFTER_MS must be <= FRESHNESS_DECAY_MS so a source never reads DEGRADED with zero freshness',
+    path: ['STALE_AFTER_MS'],
+  });
 
 export function buildOrchestratorConfig(env: NodeJS.ProcessEnv = process.env): OrchestratorConfig {
   const parsed = OrchestratorEnvSchema.parse(env);

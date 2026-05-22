@@ -26,6 +26,7 @@ describe('buildOrchestratorConfig', () => {
       AGGREGATION_INTERVAL_MS: '100',
       BREAKER_TRIP_STREAK: '3',
       BREAKER_RECOVERY_WINDOW_MS: '1500',
+      DEGRADED_AFTER_MS: '300',
       STALE_AFTER_MS: '600',
     });
     expect(cfg.sources).toEqual(['mock']);
@@ -41,6 +42,14 @@ describe('buildOrchestratorConfig', () => {
 
   it('should reject a non-positive interval', () => {
     expect(() => buildOrchestratorConfig({ AGGREGATION_INTERVAL_MS: '0' })).toThrow();
+  });
+
+  it('should reject DEGRADED_AFTER_MS greater than STALE_AFTER_MS', () => {
+    expect(() => buildOrchestratorConfig({ DEGRADED_AFTER_MS: '13000' })).toThrow();
+  });
+
+  it('should reject STALE_AFTER_MS greater than FRESHNESS_DECAY_MS', () => {
+    expect(() => buildOrchestratorConfig({ STALE_AFTER_MS: '13000' })).toThrow();
   });
 
   it('should reject duplicate sources', () => {
