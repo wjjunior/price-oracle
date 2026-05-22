@@ -8,3 +8,5 @@ export const aggregatesSubject = (asset: AssetId): `aggregates.${AssetId}` =>
 
 export const TICKS_SUBSCRIPTION_PATTERN = 'ticks.>' as const;
 export const AGGREGATES_SUBSCRIPTION_PATTERN = 'aggregates.>' as const;
+
+export const CORRELATION_HEADER = 'correlation-id' as const;

@@ -1,15 +1,13 @@
 import { headers, type NatsConnection } from '@nats-io/nats-core';
 import { connect } from '@nats-io/transport-node';
 import { Inject, Injectable } from '@nestjs/common';
+import { CORRELATION_HEADER } from '@price-oracle/contracts/subjects';
 import { PinoLogger } from 'nestjs-pino';
 
 import { INGESTOR_CONFIG, type IngestorConfig } from '../config/env.schema.js';
 
 import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import type { z } from 'zod';
-
-
-export const CORRELATION_HEADER = 'correlation-id';
 
 function redactUrl(url: string): string {
   return url.replace(/\/\/[^@/]+@/, '//***@');

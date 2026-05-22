@@ -50,9 +50,15 @@ importers:
 
   apps/aggregator:
     dependencies:
+      '@nats-io/nats-core':
+        specifier: ^3.0.0
+        version: 3.4.0
       '@price-oracle/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      pino:
+        specifier: ^9.5.0
+        version: 9.14.0
     devDependencies:
       fast-check:
         specifier: ^4.1.1
