@@ -5,16 +5,19 @@ import { defineConfig } from 'vitest/config';
 declare const process: { readonly env: Record<string, string | undefined> };
 
 const DEFAULT_AGGREGATOR_PORT = '7402';
+const DEFAULT_MOCK_PORT = '7401';
 const aggregatorPort = process.env.AGGREGATOR_HTTP_PORT ?? DEFAULT_AGGREGATOR_PORT;
-const proxied = { target: `http://localhost:${aggregatorPort}`, changeOrigin: true };
+const mockPort = process.env.MOCK_HTTP_PORT ?? DEFAULT_MOCK_PORT;
+const aggregatorProxy = { target: `http://localhost:${aggregatorPort}`, changeOrigin: true };
+const mockProxy = { target: `http://localhost:${mockPort}`, changeOrigin: true };
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { tsconfigPaths: true },
   server: {
     proxy: {
-      '/api': proxied,
-      '/events': { ...proxied, ws: false },
+      '/api': aggregatorProxy,
+      '/admin': mockProxy,
     },
   },
   test: {
