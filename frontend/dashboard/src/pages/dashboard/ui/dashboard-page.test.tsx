@@ -28,11 +28,30 @@ class MockEventSource {
 
 const WIDGET_SLOTS = ['price-overview', 'source-health', 'audit-timeline', 'diagnose-panel', 'chaos-controls'] as const;
 
+function snapshot(asset: 'btc' | 'eth', price: number) {
+  return {
+    asset,
+    aggregate: { asset, price, confidence: 0.95, contributingSources: ['binance'], computedAt: 1 },
+    sources: [],
+    breaker: 'CLOSED',
+  };
+}
+
+function jsonResponse(body: unknown): Promise<Response> {
+  return Promise.resolve(
+    new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } }),
+  );
+}
+
 beforeEach(() => {
   vi.stubGlobal('EventSource', MockEventSource);
-  vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-    new Response(JSON.stringify({ events: [] }), { status: 200, headers: { 'content-type': 'application/json' } }),
-  );
+  vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+    const url = String(input);
+    if (url.includes('/api/snapshot?asset=btc')) return jsonResponse(snapshot('btc', 65_000));
+    if (url.includes('/api/snapshot?asset=eth')) return jsonResponse(snapshot('eth', 3_000));
+    if (url.includes('/api/audit')) return jsonResponse({ events: [] });
+    return Promise.reject(new Error(`unexpected fetch ${url}`));
+  });
 });
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -61,8 +80,10 @@ describe('DashboardPage', () => {
     }
   });
 
-  it('should not show the reconnect indicator while connected', () => {
+  it('should not show the reconnect indicator while the stream is open', async () => {
     const { container } = renderPage();
+    await waitFor(() => expect(MockEventSource.last).not.toBeNull());
+    act(() => MockEventSource.last?.onopen?.());
     expect(container.querySelector('[data-slot="sse-status"]')).toBeNull();
   });
 
