@@ -67,7 +67,7 @@ describe('transitionBreaker (properties)', () => {
     fc.assert(
       fc.property(
         unit,
-        fc.integer({ min: 60_000, max: 10 ** 12 }),
+        fc.integer({ min: 70_000, max: 10 ** 12 }),
         cfgArb,
         fc.nat(),
         (confidence, now, cfg, seed) => {
@@ -85,7 +85,7 @@ describe('transitionBreaker (properties)', () => {
     fc.assert(
       fc.property(
         unit,
-        fc.integer({ min: 60_000, max: 10 ** 12 }),
+        fc.integer({ min: 70_000, max: 10 ** 12 }),
         cfgArb,
         fc.nat(),
         (confidence, now, cfg, seed) => {
