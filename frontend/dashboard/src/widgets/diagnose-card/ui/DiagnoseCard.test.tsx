@@ -19,9 +19,9 @@ describe('DiagnoseCard', () => {
     expect(screen.getByRole('button', { name: 'Diagnose' })).toBeDisabled();
   });
 
-  it('should render the answered Markdown response', () => {
+  it('should render the answered Markdown response', async () => {
     render(<DiagnoseCard state="answered" markdown={'## Diagnosis\n\nConfidence is low for BTC.'} />);
-    expect(screen.getByRole('heading', { name: 'Diagnosis' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Diagnosis' })).toBeInTheDocument();
     expect(screen.getByText('Confidence is low for BTC.')).toBeInTheDocument();
   });
 });
