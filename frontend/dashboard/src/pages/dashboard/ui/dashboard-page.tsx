@@ -1,8 +1,9 @@
 import { useState, type JSX } from 'react';
 
+import { DiagnosePanel } from './DiagnosePanel.js';
+
 import { AuditTimeline } from '@/widgets/audit-timeline';
 import { ChaosControls } from '@/widgets/chaos-controls';
-import { DiagnoseCard } from '@/widgets/diagnose-card';
 import { PriceOverview } from '@/widgets/price-overview';
 import { SourceHealth } from '@/widgets/source-health';
 
@@ -28,7 +29,7 @@ export function DashboardPage(): JSX.Element {
             <SourceHealth now={now} />
           </div>
           <div className="lg:col-span-1">
-            <DiagnoseCard state="empty" />
+            <DiagnosePanel />
           </div>
           <div className="lg:col-span-2">
             <AuditTimeline now={now} />
