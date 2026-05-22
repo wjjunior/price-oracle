@@ -15,8 +15,6 @@ async function bootstrap(): Promise<void> {
   const cfg = app.get<IngestorConfig>(INGESTOR_CONFIG);
   await app.listen(cfg.httpPort);
 
-  // Explicit signal handling owns the single shutdown path (app.close runs the
-  // lifecycle hooks), so enableShutdownHooks would only double-register them.
   let shutdownPromise: Promise<void> | undefined;
   const shutdown = (signal: NodeJS.Signals): void => {
     if (shutdownPromise !== undefined) return;
@@ -32,8 +30,6 @@ async function bootstrap(): Promise<void> {
   process.once('SIGINT', shutdown);
 }
 
-// Boot failures (unreachable NATS, invalid env) occur before the pino logger is
-// flushed, so emit a structured fatal line directly and exit non-zero.
 try {
   await bootstrap();
 } catch (err: unknown) {

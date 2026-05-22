@@ -57,8 +57,6 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
     this.publishBytes(subject, this.encoder.encode(JSON.stringify(result.data)), correlationId);
   }
 
-  // Mock-only: emits an intentionally invalid payload for the `malformed` chaos mode,
-  // bypassing schema validation so the aggregator's Zod boundary is exercised.
   publishRaw(subject: string, body: string, correlationId: string): void {
     this.publishBytes(subject, this.encoder.encode(body), correlationId);
   }
