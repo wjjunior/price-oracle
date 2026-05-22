@@ -3,18 +3,12 @@ import { useState, type JSX } from 'react';
 import type { AuditEvent } from '@price-oracle/contracts/events';
 import type { AssetId, Millis } from '@price-oracle/contracts/primitives';
 
-import { AuditRow, useAuditEvents } from '@/entities/audit-event';
+import { AuditRow, auditEventKey, useAuditEvents } from '@/entities/audit-event';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 
 type Filter = 'all' | AssetId;
 const FILTERS: readonly Filter[] = ['all', 'btc', 'eth'];
-
-function rowKey(event: AuditEvent): string {
-  const asset = 'asset' in event ? event.asset : '';
-  const source = 'source' in event ? event.source : '';
-  return `${event.type}:${asset}:${source}:${event.at}`;
-}
 
 function matchesFilter(event: AuditEvent, filter: Filter): boolean {
   if (filter === 'all') return true;
@@ -43,7 +37,7 @@ export function AuditTimeline({ now }: { readonly now: Millis }): JSX.Element {
       </div>
       <div className="flex flex-col gap-1">
         {visible.map((event) => (
-          <AuditRow key={rowKey(event)} event={event} now={now} />
+          <AuditRow key={auditEventKey(event)} event={event} now={now} />
         ))}
       </div>
     </Card>

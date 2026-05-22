@@ -8,37 +8,35 @@ import { Skeleton } from '@/shared/ui/skeleton';
 
 export type DiagnoseState = 'empty' | 'loading' | 'answered';
 
-export function DiagnoseCard({
-  state,
-  markdown,
-  onRequest,
-}: {
-  readonly state: DiagnoseState;
-  readonly markdown?: string;
-  readonly onRequest?: () => void;
-}): JSX.Element {
+export type DiagnoseCardProps = { readonly onRequest?: () => void } & (
+  | { readonly state: 'empty' }
+  | { readonly state: 'loading' }
+  | { readonly state: 'answered'; readonly markdown: string }
+);
+
+export function DiagnoseCard(props: DiagnoseCardProps): JSX.Element {
   return (
     <Card data-slot="diagnose-card" className="gap-3 p-4">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">Diagnose</span>
-        <Button size="sm" onClick={onRequest} disabled={state === 'loading'}>
+        <Button size="sm" onClick={props.onRequest} disabled={props.state === 'loading'}>
           Diagnose
         </Button>
       </div>
-      {state === 'empty' ? (
+      {props.state === 'empty' ? (
         <p className="text-sm text-muted-foreground">
           Request a diagnosis to explain the current feed state.
         </p>
       ) : null}
-      {state === 'loading' ? (
+      {props.state === 'loading' ? (
         <div data-slot="diagnose-loading" className="flex flex-col gap-2">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-2/3" />
         </div>
       ) : null}
-      {state === 'answered' && markdown !== undefined ? (
+      {props.state === 'answered' ? (
         <div data-slot="diagnose-markdown" className="text-sm [&_h2]:mb-1 [&_h2]:font-semibold">
-          <Markdown>{markdown}</Markdown>
+          <Markdown>{props.markdown}</Markdown>
         </div>
       ) : null}
     </Card>
