@@ -14,7 +14,7 @@ const ASSETS: readonly AssetId[] = ['btc', 'eth'];
 type ScenarioMeta = {
   readonly Icon: LucideIcon;
   readonly title: string;
-  readonly variant: 'destructive' | 'outline' | 'secondary';
+  readonly variant: 'destructive' | 'outline' | 'ghost';
 };
 
 const SCENARIO_META: Record<ChaosScenario, ScenarioMeta> = {
@@ -36,7 +36,7 @@ const SCENARIO_META: Record<ChaosScenario, ScenarioMeta> = {
   reset: {
     Icon: RotateCcwIcon,
     title: 'Restore the source to healthy.',
-    variant: 'secondary',
+    variant: 'ghost',
   },
 };
 
@@ -50,52 +50,53 @@ export function ChaosControls({
   readonly pending: ReadonlySet<string>;
 }): JSX.Element {
   return (
-    <Card data-slot="chaos-controls" className="gap-3 p-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex flex-col">
-          <span className="text-sm font-medium">Chaos — mock source</span>
-          <span className="text-xs text-muted-foreground">Inject failures (dev only)</span>
-        </div>
+    <Card data-slot="chaos-controls" className="gap-4 py-4 px-4">
+      <div className="flex flex-col gap-0.5">
+        <span className="font-mono text-xs uppercase tracking-[0.6px] text-muted-foreground">
+          Chaos — mock source
+        </span>
+        <span className="text-[10px] text-muted-foreground">Inject failures (dev only)</span>
+      </div>
+      <div className="flex flex-col gap-3">
+        {ASSETS.map((asset) => (
+          <div key={asset} data-slot="chaos-asset" data-asset={asset} className="flex flex-col gap-1.5">
+            <span className="font-mono text-[10px] uppercase tracking-[0.25px] text-muted-foreground">
+              {asset.toUpperCase()}
+            </span>
+            <div className="grid grid-cols-4 gap-1.5">
+              {CHAOS_SCENARIOS.map((scenario) => {
+                const meta = SCENARIO_META[scenario];
+                return (
+                  <Button
+                    key={scenario}
+                    size="sm"
+                    variant={meta.variant}
+                    title={meta.title}
+                    className="h-7 gap-1 px-2 text-[11px]"
+                    onClick={() => onAction(asset, scenario)}
+                    disabled={pending.has(chaosActionKey(asset, scenario))}
+                  >
+                    <meta.Icon className="size-3" aria-hidden />
+                    <span className="capitalize">{scenario}</span>
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-border pt-3">
         <Button
           size="sm"
-          variant="secondary"
+          variant="outline"
+          className="h-7 w-full gap-1.5 text-[11px]"
           onClick={onResetAll}
           disabled={pending.has(RESET_ALL_KEY)}
         >
+          <RotateCcwIcon className="size-3" aria-hidden />
           Reset all
         </Button>
       </div>
-      {ASSETS.map((asset) => (
-        <div
-          key={asset}
-          data-slot="chaos-asset"
-          data-asset={asset}
-          className="flex flex-col gap-1.5 border-t border-border pt-2"
-        >
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {asset}
-          </span>
-          <div className="grid grid-cols-2 gap-1.5">
-            {CHAOS_SCENARIOS.map((scenario) => {
-              const meta = SCENARIO_META[scenario];
-              return (
-                <Button
-                  key={scenario}
-                  size="sm"
-                  variant={meta.variant}
-                  title={meta.title}
-                  className="justify-start gap-1.5"
-                  onClick={() => onAction(asset, scenario)}
-                  disabled={pending.has(chaosActionKey(asset, scenario))}
-                >
-                  <meta.Icon className="size-3.5" aria-hidden />
-                  <span className="capitalize">{scenario}</span>
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      ))}
     </Card>
   );
 }

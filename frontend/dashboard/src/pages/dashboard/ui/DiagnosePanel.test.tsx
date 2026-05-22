@@ -28,7 +28,7 @@ afterEach(() => vi.restoreAllMocks());
 describe('DiagnosePanel', () => {
   it('should render the empty card and a BTC/ETH toggle initially', () => {
     renderPanel();
-    expect(screen.getByText(/request a diagnosis/i)).toBeInTheDocument();
+    expect(screen.getByText(/click diagnose to generate/i)).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'BTC' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'ETH' })).toBeInTheDocument();
   });

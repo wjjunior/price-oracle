@@ -14,10 +14,10 @@ describe('ConfidenceBar', () => {
     expect(fill(container)?.style.width).toBe('0%');
   });
 
-  it('should size the fill to the rounded confidence percentage', () => {
-    const { container } = render(<ConfidenceBar confidence={0.95} />);
-    expect(screen.getByText('95%')).toBeInTheDocument();
-    expect(fill(container)?.style.width).toBe('95%');
+  it('should size the fill to the precise confidence percentage with two decimals', () => {
+    const { container } = render(<ConfidenceBar confidence={0.9833} />);
+    expect(screen.getByText('98.33%')).toBeInTheDocument();
+    expect(fill(container)?.style.width).toBe('98.33%');
   });
 
   it('should tag the fill HIGH at or above the high threshold', () => {

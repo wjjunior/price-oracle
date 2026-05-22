@@ -27,20 +27,29 @@ export function AuditTimeline({ now }: { readonly now: Millis }): JSX.Element {
   };
 
   return (
-    <Card data-slot="audit-timeline" className="gap-3 p-4">
-      <Tabs value={filter} onValueChange={onValueChange}>
-        <TabsList data-slot="audit-filter" className="w-full">
-          {FILTERS.map((option) => (
-            <TabsTrigger key={option} value={option} className="flex-1">
-              {option.toUpperCase()}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-      <ScrollArea data-slot="audit-list" className="h-80 pr-3">
-        <div className="flex flex-col gap-1">
+    <Card data-slot="audit-timeline" className="gap-0 overflow-hidden py-0">
+      <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2.5">
+        <span className="font-mono text-xs uppercase tracking-[0.6px] text-muted-foreground">
+          Audit Timeline
+        </span>
+        <Tabs value={filter} onValueChange={onValueChange}>
+          <TabsList data-slot="audit-filter" className="h-7 rounded-full bg-muted p-0.5">
+            {FILTERS.map((option) => (
+              <TabsTrigger
+                key={option}
+                value={option}
+                className="h-6 rounded-full px-3 text-[10px]"
+              >
+                {option.toUpperCase()}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+      <ScrollArea data-slot="audit-list" className="h-64 px-3 py-2">
+        <div className="flex flex-col gap-0.5">
           {visible.length === 0 ? (
-            <span className="text-sm text-muted-foreground">No events yet.</span>
+            <span className="px-2 py-3 text-sm text-muted-foreground">No events yet.</span>
           ) : (
             visible.map((event) => <AuditRow key={auditEventKey(event)} event={event} now={now} />)
           )}

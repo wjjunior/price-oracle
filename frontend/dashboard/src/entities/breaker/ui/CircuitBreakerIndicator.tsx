@@ -1,5 +1,5 @@
 import { BreakerState } from '@price-oracle/contracts/primitives';
-import { ShieldAlertIcon, ShieldCheckIcon, ShieldXIcon, type LucideIcon } from 'lucide-react';
+import { CircleCheckIcon, CircleDotIcon, CircleXIcon, type LucideIcon } from 'lucide-react';
 
 import type { JSX } from 'react';
 
@@ -14,21 +14,21 @@ type BreakerMeta = {
 
 const BREAKER_META: Record<BreakerState, BreakerMeta> = {
   [BreakerState.enum.CLOSED]: {
-    Icon: ShieldCheckIcon,
-    label: 'Live',
-    className: 'bg-healthy/15 text-healthy',
+    Icon: CircleCheckIcon,
+    label: 'CLOSED',
+    className: 'bg-brand-badge-bg border-brand/50 text-brand',
     pulse: false,
   },
   [BreakerState.enum.HALF_OPEN]: {
-    Icon: ShieldAlertIcon,
-    label: 'Recovering',
-    className: 'bg-degraded/20 text-degraded-foreground',
+    Icon: CircleDotIcon,
+    label: 'HALF-OPEN',
+    className: 'bg-degraded/15 border-degraded/50 text-degraded',
     pulse: false,
   },
   [BreakerState.enum.OPEN]: {
-    Icon: ShieldXIcon,
-    label: 'Suppressed',
-    className: 'bg-stale/15 text-stale',
+    Icon: CircleXIcon,
+    label: 'OPEN',
+    className: 'bg-stale/10 border-stale/50 text-stale',
     pulse: true,
   },
 };
@@ -44,11 +44,11 @@ export function CircuitBreakerIndicator({
       data-slot="breaker-indicator"
       data-state={state}
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+        'inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none tracking-wider',
         meta.className,
       )}
     >
-      <meta.Icon className={cn('size-3.5', meta.pulse && 'animate-pulse')} aria-hidden />
+      <meta.Icon className={cn('size-3', meta.pulse && 'animate-pulse')} aria-hidden />
       {meta.label}
     </span>
   );

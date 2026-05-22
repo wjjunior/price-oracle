@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatTrendTime, formatTrendValue } from './format-trend.js';
+import { formatTrendAxisPrice, formatTrendTime, formatTrendValue } from './format-trend.js';
 
 import { formatCurrency } from '@/shared/lib/format';
 
 describe('formatTrendValue', () => {
-  it('should format confidence as a one-decimal percentage', () => {
-    expect(formatTrendValue(0.983, 'confidence')).toEqual(['98.3%', 'Confidence']);
+  it('should format confidence as a two-decimal percentage', () => {
+    expect(formatTrendValue(0.9833, 'confidence')).toEqual(['98.33%', 'Confidence']);
   });
 
   it('should format price as currency', () => {
@@ -14,20 +14,23 @@ describe('formatTrendValue', () => {
   });
 
   it('should unwrap an array value before formatting', () => {
-    expect(formatTrendValue([0.6], 'confidence')).toEqual(['60.0%', 'Confidence']);
-  });
-
-  it('should format the uncertainty band as a currency range', () => {
-    expect(formatTrendValue([59_000, 61_000], 'band')).toEqual([
-      `${formatCurrency(59_000)} – ${formatCurrency(61_000)}`,
-      'Uncertainty',
-    ]);
+    expect(formatTrendValue([0.6], 'confidence')).toEqual(['60.00%', 'Confidence']);
   });
 });
 
 describe('formatTrendTime', () => {
-  it('should render the point timestamp as a local time string', () => {
-    const at = Date.UTC(2026, 0, 1, 12, 0, 0);
-    expect(formatTrendTime(at)).toBe(new Date(at).toLocaleTimeString());
+  it('should render a 24-hour HH:MM tick label', () => {
+    const at = Date.UTC(2026, 0, 1, 12, 7, 0);
+    expect(formatTrendTime(at)).toMatch(/^\d{2}:\d{2}$/);
+  });
+});
+
+describe('formatTrendAxisPrice', () => {
+  it('should render integer dollars with thousands separators', () => {
+    expect(formatTrendAxisPrice(20_000)).toBe('$20,000');
+  });
+
+  it('should round to the nearest dollar', () => {
+    expect(formatTrendAxisPrice(1_950.49)).toBe('$1,950');
   });
 });

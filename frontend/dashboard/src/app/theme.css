@@ -4,67 +4,71 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.98 0.006 220);
-  --foreground: oklch(0.25 0.03 225);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.03 225);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.03 225);
-  --primary: oklch(0.333 0.059 220);
-  --primary-foreground: oklch(0.985 0.005 220);
-  --secondary: oklch(0.96 0.008 220);
-  --secondary-foreground: oklch(0.25 0.03 225);
-  --muted: oklch(0.96 0.008 220);
-  --muted-foreground: oklch(0.52 0.02 225);
-  --accent: oklch(0.95 0.012 215);
-  --accent-foreground: oklch(0.3 0.04 225);
-  --destructive: oklch(0.57 0.2 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.9 0.012 220);
-  --input: oklch(0.9 0.012 220);
-  --ring: oklch(0.62 0.1 210);
-  --healthy: oklch(0.6 0.13 155);
-  --healthy-foreground: oklch(0.99 0 0);
-  --degraded: oklch(0.74 0.15 80);
-  --degraded-foreground: oklch(0.2 0.04 80);
-  --stale: oklch(0.57 0.2 27);
-  --stale-foreground: oklch(0.99 0 0);
+  --background: #f8f8f8;
+  --foreground: #0b0b0b;
+  --card: #ffffff;
+  --card-foreground: #0b0b0b;
+  --popover: #ffffff;
+  --popover-foreground: #0b0b0b;
+  --primary: #033d4b;
+  --primary-foreground: #ffffff;
+  --secondary: #eeeeee;
+  --secondary-foreground: #0b0b0b;
+  --muted: #eeeeee;
+  --muted-foreground: #555555;
+  --accent: #e6f2f5;
+  --accent-foreground: #033d4b;
+  --destructive: #c53637;
+  --destructive-foreground: #ffffff;
+  --border: #d7d7d7;
+  --input: #d7d7d7;
+  --ring: #033d4b;
+  --healthy: #033d4b;
+  --healthy-foreground: #033d4b;
+  --degraded: #fe9a00;
+  --degraded-foreground: #ffffff;
+  --stale: #c53637;
+  --stale-foreground: #ffffff;
   --brand: #033d4b;
   --brand-light: #055a6d;
   --brand-cyan: #00c9c8;
-  --radius: 0.5rem;
+  --brand-badge-bg: #e6f2f5;
+  --chart-tick: #666666;
+  --radius: 0.75rem;
   --radius-md: 0.375rem;
 }
 
 .dark {
-  --background: oklch(0.16 0.025 225);
-  --foreground: oklch(0.97 0.005 220);
-  --card: oklch(0.21 0.028 225);
-  --card-foreground: oklch(0.97 0.005 220);
-  --popover: oklch(0.21 0.028 225);
-  --popover-foreground: oklch(0.97 0.005 220);
-  --primary: oklch(0.6 0.09 208);
-  --primary-foreground: oklch(0.16 0.025 225);
-  --secondary: oklch(0.26 0.02 225);
-  --secondary-foreground: oklch(0.97 0.005 220);
-  --muted: oklch(0.26 0.02 225);
-  --muted-foreground: oklch(0.68 0.015 222);
-  --accent: oklch(0.28 0.03 222);
-  --accent-foreground: oklch(0.97 0.005 220);
-  --destructive: oklch(0.64 0.2 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.3 0.02 225);
-  --input: oklch(0.3 0.02 225);
-  --ring: oklch(0.62 0.085 210);
-  --healthy: oklch(0.66 0.14 155);
-  --healthy-foreground: oklch(0.16 0.03 155);
-  --degraded: oklch(0.78 0.15 82);
-  --degraded-foreground: oklch(0.2 0.04 80);
-  --stale: oklch(0.64 0.2 27);
-  --stale-foreground: oklch(0.99 0 0);
+  --background: #0c1418;
+  --foreground: #f1f5f7;
+  --card: #14222a;
+  --card-foreground: #f1f5f7;
+  --popover: #14222a;
+  --popover-foreground: #f1f5f7;
+  --primary: #22b8cf;
+  --primary-foreground: #0c1418;
+  --secondary: #1b2a32;
+  --secondary-foreground: #f1f5f7;
+  --muted: #1b2a32;
+  --muted-foreground: #a5b3ba;
+  --accent: #103241;
+  --accent-foreground: #4dd0e1;
+  --destructive: #e0606a;
+  --destructive-foreground: #ffffff;
+  --border: #25333b;
+  --input: #25333b;
+  --ring: #22b8cf;
+  --healthy: #4dd0e1;
+  --healthy-foreground: #4dd0e1;
+  --degraded: #ffb547;
+  --degraded-foreground: #1a1208;
+  --stale: #e0606a;
+  --stale-foreground: #ffffff;
   --brand: #22b8cf;
   --brand-light: #4dd0e1;
-  --brand-cyan: #00c9c8;
+  --brand-cyan: #00e0df;
+  --brand-badge-bg: #0e2a35;
+  --chart-tick: #8ea0a8;
 }
 
 @theme inline {
@@ -96,9 +100,14 @@
   --color-brand: var(--brand);
   --color-brand-light: var(--brand-light);
   --color-brand-cyan: var(--brand-cyan);
-  --radius-sm: calc(var(--radius) - 2px);
+  --color-brand-badge-bg: var(--brand-badge-bg);
+  --color-chart-tick: var(--chart-tick);
+  --radius-sm: calc(var(--radius) - 4px);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius);
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:
+    'Menlo', ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
 }
 
 * {
@@ -108,4 +117,5 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans);
 }
