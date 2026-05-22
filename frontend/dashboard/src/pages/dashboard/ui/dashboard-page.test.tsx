@@ -11,7 +11,7 @@ const WIDGET_SLOTS = [
   'price-overview',
   'source-health',
   'audit-timeline',
-  'diagnose-card',
+  'diagnose-panel',
   'chaos-controls',
 ] as const;
 
