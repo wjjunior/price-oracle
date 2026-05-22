@@ -1,10 +1,10 @@
 import { TickSchema } from '@price-oracle/contracts/events';
 import { ticksSubject } from '@price-oracle/contracts/subjects';
+import { type NatsService } from '@price-oracle/ingestor-transport/nats';
 import { PinoLogger } from 'nestjs-pino';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type IngestorConfig } from '../config/env.schema.js';
-import { type NatsService } from '../nats/nats.service.js';
 
 import { ChaosStateService } from './chaos-state.service.js';
 import { TickGeneratorService } from './tick-generator.service.js';

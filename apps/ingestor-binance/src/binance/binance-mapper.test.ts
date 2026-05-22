@@ -2,11 +2,11 @@ import { readFileSync } from 'node:fs';
 
 import { TickSchema } from '@price-oracle/contracts/events';
 import { ticksSubject } from '@price-oracle/contracts/subjects';
+import { type NatsService } from '@price-oracle/ingestor-transport/nats';
 import { PinoLogger } from 'nestjs-pino';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type IngestorConfig } from '../config/env.schema.js';
-import { type NatsService } from '../nats/nats.service.js';
 
 import { assetFromBinanceSymbol } from './binance-symbols.js';
 import { BinanceService } from './binance.service.js';

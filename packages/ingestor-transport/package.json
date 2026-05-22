@@ -1,0 +1,28 @@
+{
+  "name": "@price-oracle/ingestor-transport",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./backoff": "./src/backoff.ts",
+    "./nats": "./src/nats/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@nats-io/nats-core": "^3.0.0",
+    "@nats-io/transport-node": "^3.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@price-oracle/contracts": "workspace:*",
+    "nestjs-pino": "^4.4.0",
+    "pino": "^9.5.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.6"
+  }
+}
