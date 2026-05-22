@@ -25,7 +25,7 @@ type InjectFailure = {
 function endpoint(target: InjectFailureConfirm): string {
   return target.kind === 'reset-all'
     ? '/admin/reset-all'
-    : `/admin/${target.asset}/${target.scenario}`;
+    : `/admin/${encodeURIComponent(target.asset)}/${encodeURIComponent(target.scenario)}`;
 }
 
 function pendingKey(target: InjectFailureConfirm): string {
