@@ -4,7 +4,7 @@ import { z } from 'zod';
 import type { OrchestratorConfig } from '../application/orchestrator.js';
 
 const DEFAULT_ASSETS = 'btc,eth';
-const DEFAULT_SOURCES = 'binance,coinbase,mock';
+const DEFAULT_SOURCES = 'mock';
 
 const splitCsv = (value: string): string[] =>
   value
@@ -32,9 +32,9 @@ const OrchestratorEnvSchema = z.object({
   AGGREGATOR_ASSETS: assetsSchema,
   AGGREGATOR_SOURCES: sourcesSchema,
   AGGREGATION_INTERVAL_MS: z.coerce.number().int().positive().default(500),
-  FRESHNESS_DECAY_MS: z.coerce.number().int().positive().default(10_000),
-  DEGRADED_AFTER_MS: z.coerce.number().int().positive().default(2_000),
-  STALE_AFTER_MS: z.coerce.number().int().positive().default(5_000),
+  FRESHNESS_DECAY_MS: z.coerce.number().int().positive().default(12_000),
+  DEGRADED_AFTER_MS: z.coerce.number().int().positive().default(5_000),
+  STALE_AFTER_MS: z.coerce.number().int().positive().default(12_000),
   HEALTH_HYSTERESIS_STREAK: z.coerce.number().int().positive().default(3),
   BREAKER_CONFIDENCE_FLOOR: z.coerce.number().min(0).max(1).default(0.6),
   BREAKER_TRIP_STREAK: z.coerce.number().int().positive().default(6),
@@ -42,7 +42,15 @@ const OrchestratorEnvSchema = z.object({
   BREAKER_HALF_OPEN_PROBE_STREAK: z.coerce.number().int().positive().default(4),
   ANOMALY_DRIFT_TOLERANCE: z.coerce.number().nonnegative().default(2),
   ANOMALY_STREAK_LENGTH: z.coerce.number().int().positive().default(6),
-});
+})
+  .refine((v) => v.DEGRADED_AFTER_MS <= v.STALE_AFTER_MS, {
+    error: 'DEGRADED_AFTER_MS must be <= STALE_AFTER_MS',
+    path: ['DEGRADED_AFTER_MS'],
+  })
+  .refine((v) => v.STALE_AFTER_MS <= v.FRESHNESS_DECAY_MS, {
+    error: 'STALE_AFTER_MS must be <= FRESHNESS_DECAY_MS so a source never reads DEGRADED with zero freshness',
+    path: ['STALE_AFTER_MS'],
+  });
 
 export function buildOrchestratorConfig(env: NodeJS.ProcessEnv = process.env): OrchestratorConfig {
   const parsed = OrchestratorEnvSchema.parse(env);

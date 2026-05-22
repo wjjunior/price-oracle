@@ -252,6 +252,41 @@ describe('Orchestrator', () => {
     expect(healthEvents.every((e) => e.data.health === 'STALE')).toBe(true);
   });
 
+  it('should keep the breaker CLOSED with stable source health over a sustained mock-only run', async () => {
+    const stable = setup({
+      sources: ['mock'],
+      thresholds: {
+        freshnessDecayMs: 12_000,
+        degradedAfterMs: 5_000,
+        staleAfterMs: 12_000,
+        healthHysteresisStreak: 3,
+      },
+    });
+    const start = 1_000_000;
+    const tickEveryMs = 1_000;
+    const pulses = 60;
+    for (let i = 0; i < pulses; i += 1) {
+      const t = start + i * tickEveryMs;
+      stable.setNow(t);
+      stable.orchestrator.routeTick(tick('btc', 'mock', 50_000, t), 'cid');
+      stable.orchestrator.routeTick(tick('eth', 'mock', 3_000, t), 'cid');
+      await stable.orchestrator.pulse(t);
+    }
+
+    const breakerOpens = stable.audit.appended.filter(
+      (e) => e.type === 'BreakerStateChanged' && e.to === 'OPEN',
+    );
+    expect(breakerOpens).toHaveLength(0);
+    expect(stable.orchestrator.getBreakerState('btc')).toBe('CLOSED');
+    expect(stable.orchestrator.getBreakerState('eth')).toBe('CLOSED');
+
+    const sourceTransitions = stable.audit.appended.filter((e) => e.type === 'SourceStateChanged');
+    expect(sourceTransitions).toHaveLength(config.assets.length);
+    expect(sourceTransitions.every((e) => e.type === 'SourceStateChanged' && e.to === 'HEALTHY')).toBe(
+      true,
+    );
+  });
+
   it('should open the breaker after tripStreak below-floor pulses and emit a BreakerStateChanged audit + breaker-state SSE', async () => {
     for (let i = 0; i < config.breaker.tripStreak; i += 1) {
       await h.orchestrator.pulse(1_000_000 + i);
