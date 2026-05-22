@@ -12,10 +12,7 @@ describe('useNow', () => {
     vi.setSystemTime(start);
     const { result } = renderHook(() => useNow(1_000));
     expect(result.current).toBe(start);
-    act(() => {
-      vi.advanceTimersByTime(1_000);
-      vi.setSystemTime(start + 1_000);
-    });
+    act(() => vi.advanceTimersByTime(1_000));
     expect(result.current).toBe(start + 1_000);
   });
 
