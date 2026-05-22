@@ -45,8 +45,11 @@ function buildPrompt(context: DiagnoseContext): string {
 }
 
 function extractText(content: ReadonlyArray<{ type: string; text?: string }>): string | null {
-  const block = content.find((c) => c.type === 'text' && typeof c.text === 'string');
-  return block?.text ?? null;
+  const text = content
+    .filter((c): c is { type: string; text: string } => c.type === 'text' && typeof c.text === 'string')
+    .map((c) => c.text)
+    .join('');
+  return text.length > 0 ? text : null;
 }
 
 export class AnthropicDiagnoseAdapter implements DiagnosePort {

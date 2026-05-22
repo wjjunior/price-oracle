@@ -89,10 +89,12 @@ describe('RateLimitedDiagnose', () => {
     const decorated = new RateLimitedDiagnose(inner.port, () => now);
     await decorated.diagnose(makeContext({ confidence: 0.1 }));
     now = 4_000;
-    await decorated.diagnose(makeContext({ confidence: 0.2 })).catch((err: unknown) => {
-      expect(err).toBeInstanceOf(DiagnoseRateLimitedError);
-      if (err instanceof DiagnoseRateLimitedError) expect(err.retryAfterMs).toBe(6_000);
-    });
+    const error = await decorated.diagnose(makeContext({ confidence: 0.2 })).then(
+      () => null,
+      (err: unknown) => err,
+    );
+    expect(error).toBeInstanceOf(DiagnoseRateLimitedError);
+    if (error instanceof DiagnoseRateLimitedError) expect(error.retryAfterMs).toBe(6_000);
   });
 
   it('should allow a new call once the window has elapsed', async () => {

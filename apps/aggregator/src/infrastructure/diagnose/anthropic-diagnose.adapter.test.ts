@@ -54,6 +54,23 @@ describe('AnthropicDiagnoseAdapter', () => {
     expect(result.tokensUsed).toBe(30);
   });
 
+  it('should concatenate multiple text blocks in order', async () => {
+    const client: AnthropicLike = {
+      messages: {
+        create: () =>
+          Promise.resolve({
+            content: [
+              { type: 'text', text: '# Part one\n' },
+              { type: 'text', text: '## Part two' },
+            ],
+          }),
+      },
+    };
+    const adapter = new AnthropicDiagnoseAdapter(client, clockReturning(0, 1));
+    const result = await adapter.diagnose(makeContext());
+    expect(result.markdown).toBe('# Part one\n## Part two');
+  });
+
   it('should pass an abort signal to the client', async () => {
     let received: AbortSignal | undefined;
     const client: AnthropicLike = {
