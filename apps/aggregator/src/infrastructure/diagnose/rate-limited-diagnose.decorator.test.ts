@@ -72,7 +72,7 @@ describe('RateLimitedDiagnose', () => {
     await expect(p1).resolves.toBe(result);
   });
 
-  it('should throw DiagnoseRateLimitedError for a second new call within the window', async () => {
+  it('should share one rate-limit window per asset across differing request contexts', async () => {
     const inner = immediateInner();
     let now = 0;
     const decorated = new RateLimitedDiagnose(inner.port, () => now);
