@@ -131,7 +131,7 @@ export class BinanceService implements OnModuleInit, OnModuleDestroy {
     }, delay);
   }
 
-  private handleMessage(raw: RawData): void {
+  handleMessage(raw: RawData): void {
     const correlationId = randomUUID();
     const text = utf8FromRawData(raw);
 
