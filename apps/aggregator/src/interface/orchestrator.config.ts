@@ -1,44 +1,66 @@
+import { AssetId, SourceId } from '@price-oracle/contracts/primitives';
+import { z } from 'zod';
+
 import type { OrchestratorConfig } from '../application/orchestrator.js';
-import type { AssetId, SourceId } from '@price-oracle/contracts/primitives';
 
-const ASSETS: readonly AssetId[] = ['btc', 'eth'];
-const SOURCES: readonly SourceId[] = ['binance', 'coinbase', 'mock'];
+const DEFAULT_ASSETS = 'btc,eth';
+const DEFAULT_SOURCES = 'binance,coinbase,mock';
 
-const AGGREGATION_INTERVAL_MS = 500;
+const splitCsv = (value: string): string[] =>
+  value
+    .split(',')
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
 
-const FRESHNESS_DECAY_MS = 10_000;
-const DEGRADED_AFTER_MS = 2_000;
-const STALE_AFTER_MS = 5_000;
-const HEALTH_HYSTERESIS_STREAK = 3;
+const assetsSchema = z
+  .string()
+  .default(DEFAULT_ASSETS)
+  .transform(splitCsv)
+  .pipe(z.array(AssetId).min(1));
 
-const BREAKER_CONFIDENCE_FLOOR = 0.6;
-const BREAKER_TRIP_STREAK = 6;
-const BREAKER_RECOVERY_WINDOW_MS = 30_000;
-const BREAKER_HALF_OPEN_PROBE_STREAK = 4;
+const sourcesSchema = z
+  .string()
+  .default(DEFAULT_SOURCES)
+  .transform(splitCsv)
+  .pipe(z.array(SourceId).min(1));
 
-const ANOMALY_DRIFT_TOLERANCE = 2;
-const ANOMALY_STREAK_LENGTH = 6;
+const OrchestratorEnvSchema = z.object({
+  AGGREGATOR_ASSETS: assetsSchema,
+  AGGREGATOR_SOURCES: sourcesSchema,
+  AGGREGATION_INTERVAL_MS: z.coerce.number().int().positive().default(500),
+  FRESHNESS_DECAY_MS: z.coerce.number().int().positive().default(10_000),
+  DEGRADED_AFTER_MS: z.coerce.number().int().positive().default(2_000),
+  STALE_AFTER_MS: z.coerce.number().int().positive().default(5_000),
+  HEALTH_HYSTERESIS_STREAK: z.coerce.number().int().positive().default(3),
+  BREAKER_CONFIDENCE_FLOOR: z.coerce.number().min(0).max(1).default(0.6),
+  BREAKER_TRIP_STREAK: z.coerce.number().int().positive().default(6),
+  BREAKER_RECOVERY_WINDOW_MS: z.coerce.number().int().positive().default(30_000),
+  BREAKER_HALF_OPEN_PROBE_STREAK: z.coerce.number().int().positive().default(4),
+  ANOMALY_DRIFT_TOLERANCE: z.coerce.number().nonnegative().default(2),
+  ANOMALY_STREAK_LENGTH: z.coerce.number().int().positive().default(6),
+});
 
-export function buildOrchestratorConfig(): OrchestratorConfig {
+export function buildOrchestratorConfig(env: NodeJS.ProcessEnv = process.env): OrchestratorConfig {
+  const parsed = OrchestratorEnvSchema.parse(env);
   return {
-    assets: ASSETS,
-    sources: SOURCES,
-    aggregationIntervalMs: AGGREGATION_INTERVAL_MS,
+    assets: parsed.AGGREGATOR_ASSETS,
+    sources: parsed.AGGREGATOR_SOURCES,
+    aggregationIntervalMs: parsed.AGGREGATION_INTERVAL_MS,
     thresholds: {
-      freshnessDecayMs: FRESHNESS_DECAY_MS,
-      degradedAfterMs: DEGRADED_AFTER_MS,
-      staleAfterMs: STALE_AFTER_MS,
-      healthHysteresisStreak: HEALTH_HYSTERESIS_STREAK,
+      freshnessDecayMs: parsed.FRESHNESS_DECAY_MS,
+      degradedAfterMs: parsed.DEGRADED_AFTER_MS,
+      staleAfterMs: parsed.STALE_AFTER_MS,
+      healthHysteresisStreak: parsed.HEALTH_HYSTERESIS_STREAK,
     },
     breaker: {
-      confidenceFloor: BREAKER_CONFIDENCE_FLOOR,
-      tripStreak: BREAKER_TRIP_STREAK,
-      recoveryWindowMs: BREAKER_RECOVERY_WINDOW_MS,
-      halfOpenProbeStreak: BREAKER_HALF_OPEN_PROBE_STREAK,
+      confidenceFloor: parsed.BREAKER_CONFIDENCE_FLOOR,
+      tripStreak: parsed.BREAKER_TRIP_STREAK,
+      recoveryWindowMs: parsed.BREAKER_RECOVERY_WINDOW_MS,
+      halfOpenProbeStreak: parsed.BREAKER_HALF_OPEN_PROBE_STREAK,
     },
     anomaly: {
-      driftTolerance: ANOMALY_DRIFT_TOLERANCE,
-      streakLength: ANOMALY_STREAK_LENGTH,
+      driftTolerance: parsed.ANOMALY_DRIFT_TOLERANCE,
+      streakLength: parsed.ANOMALY_STREAK_LENGTH,
     },
   };
 }
