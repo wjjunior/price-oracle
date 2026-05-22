@@ -137,7 +137,7 @@ export class CoinbaseService implements OnModuleInit, OnModuleDestroy {
     }, delay);
   }
 
-  private handleMessage(raw: RawData): void {
+  handleMessage(raw: RawData): void {
     const text = utf8FromRawData(raw);
     let parsed: unknown;
     try {

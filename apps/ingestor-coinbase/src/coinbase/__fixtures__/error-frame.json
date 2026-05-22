@@ -1,0 +1,5 @@
+{
+  "type": "error",
+  "message": "Failed to subscribe",
+  "errors": [{ "id": "authentication_failure", "message": "Invalid API key" }]
+}

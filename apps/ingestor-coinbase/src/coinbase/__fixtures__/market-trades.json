@@ -1,0 +1,21 @@
+{
+  "channel": "market_trades",
+  "client_id": "",
+  "timestamp": "2026-05-21T19:00:00.000000Z",
+  "sequence_num": 5,
+  "events": [
+    {
+      "type": "update",
+      "trades": [
+        {
+          "trade_id": "987654321",
+          "product_id": "BTC-USD",
+          "price": "95000.50",
+          "size": "0.01230000",
+          "side": "BUY",
+          "time": "2026-05-21T18:59:59.987654Z"
+        }
+      ]
+    }
+  ]
+}
