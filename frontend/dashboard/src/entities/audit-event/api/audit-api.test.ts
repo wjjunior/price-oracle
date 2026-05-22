@@ -2,11 +2,11 @@ import {
   buildBreakerStateChangedEvent,
   buildSourceStateChangedEvent,
 } from '@price-oracle/contracts/events';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuditStore } from '../model/audit-store.js';
 
-import { applyAuditEnvelope, seedAuditEvents } from './audit-api.js';
+import { applyAuditEnvelope, loadAuditEvents, seedAuditEvents } from './audit-api.js';
 
 import type { GetAuditResponse } from '@price-oracle/contracts/rest';
 import type { SseEnvelope } from '@price-oracle/contracts/sse';
@@ -36,5 +36,25 @@ describe('seedAuditEvents', () => {
     };
     seedAuditEvents(response);
     expect(useAuditStore.getState().events.map((e) => e.at)).toEqual([2_000, 1_000]);
+  });
+});
+
+describe('loadAuditEvents', () => {
+  it('should GET /api/audit with the default limit and parse the response', async () => {
+    const events = [
+      { type: 'AnomalyDetected', asset: 'btc', source: 'binance', metric: 'drift', value: 5, threshold: 2, at: 1_000 },
+    ];
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        new Response(JSON.stringify({ events }), { status: 200, headers: { 'content-type': 'application/json' } }),
+      );
+    const result = await loadAuditEvents();
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/api/audit?limit=20'),
+      expect.objectContaining({ method: 'GET' }),
+    );
+    expect(result.events).toHaveLength(1);
+    vi.restoreAllMocks();
   });
 });
