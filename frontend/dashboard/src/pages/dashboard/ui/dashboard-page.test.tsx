@@ -9,14 +9,20 @@ import type { JSX, ReactNode } from 'react';
 
 class MockEventSource {
   static readonly CLOSED = 2;
-  static last: MockEventSource | null = null;
+  private static _last: MockEventSource | null = null;
+  static get last(): MockEventSource | null {
+    return MockEventSource._last;
+  }
+  static resetLast(): void {
+    MockEventSource._last = null;
+  }
   onopen: (() => void) | null = null;
   onerror: (() => void) | null = null;
   onmessage: ((event: MessageEvent<string>) => void) | null = null;
   readyState = 0;
   readonly close = vi.fn();
   constructor(readonly url: string) {
-    MockEventSource.last = this;
+    MockEventSource._last = this;
   }
 }
 
@@ -31,7 +37,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
-  MockEventSource.last = null;
+  MockEventSource.resetLast();
 });
 
 function renderPage(): RenderResult {

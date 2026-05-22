@@ -13,7 +13,13 @@ class MockEventSource {
   static readonly CONNECTING = 0;
   static readonly OPEN = 1;
   static readonly CLOSED = 2;
-  static last: MockEventSource | null = null;
+  private static _last: MockEventSource | null = null;
+  static get last(): MockEventSource | null {
+    return MockEventSource._last;
+  }
+  static resetLast(): void {
+    MockEventSource._last = null;
+  }
   onopen: (() => void) | null = null;
   onerror: (() => void) | null = null;
   onmessage: ((event: MessageEvent<string>) => void) | null = null;
@@ -22,7 +28,7 @@ class MockEventSource {
     this.readyState = MockEventSource.CLOSED;
   });
   constructor(readonly url: string) {
-    MockEventSource.last = this;
+    MockEventSource._last = this;
   }
   emit(envelope: unknown): void {
     this.onmessage?.(new MessageEvent('message', { data: JSON.stringify(envelope) }));
@@ -58,7 +64,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
-  MockEventSource.last = null;
+  MockEventSource.resetLast();
   usePriceAggregateStore.setState({ byAsset: { btc: null, eth: null } });
   useSourceStore.setState({ byAsset: { btc: {}, eth: {} } });
   useAuditStore.setState({ events: [] });
@@ -87,9 +93,12 @@ describe('useDashboardData', () => {
   it('should reflect the SSE connection state when the stream errors', async () => {
     const { result } = renderHook(() => useDashboardData());
     await waitFor(() => expect(MockEventSource.last).not.toBeNull());
+    const client = MockEventSource.last;
     act(() => {
-      MockEventSource.last!.readyState = MockEventSource.CONNECTING;
-      MockEventSource.last?.onerror?.();
+      if (client) {
+        client.readyState = MockEventSource.CONNECTING;
+        client.onerror?.();
+      }
     });
     await waitFor(() => expect(result.current.connectionState).toBe('reconnecting'));
   });
