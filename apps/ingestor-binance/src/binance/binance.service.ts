@@ -3,13 +3,13 @@ import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { TickSchema } from '@price-oracle/contracts/events';
 import { ticksSubject } from '@price-oracle/contracts/subjects';
+import { nextDelayMs } from '@price-oracle/ingestor-transport/backoff';
+import { NatsService } from '@price-oracle/ingestor-transport/nats';
 import { PinoLogger } from 'nestjs-pino';
 import WebSocket, { type RawData } from 'ws';
 
 import { INGESTOR_CONFIG, type IngestorConfig } from '../config/env.schema.js';
-import { NatsService } from '../nats/nats.service.js';
 
-import { nextDelayMs } from './backoff.js';
 import { assetFromBinanceSymbol } from './binance-symbols.js';
 import { BinanceCombinedTradeEnvelopeSchema } from './trade-event.schema.js';
 

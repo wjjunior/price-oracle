@@ -7,7 +7,7 @@ import {
   nextDelayMs,
 } from './backoff.js';
 
-const noJitter = () => 0.5;
+const noJitter = (): number => 0.5;
 
 describe('nextDelayMs', () => {
   it('should return the base delay on attempt 0 with no jitter', () => {

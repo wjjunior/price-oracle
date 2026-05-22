@@ -1,11 +1,11 @@
 import { Test } from '@nestjs/testing';
+import { NatsService } from '@price-oracle/ingestor-transport/nats';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type IngestorConfig, INGESTOR_CONFIG } from '../config/env.schema.js';
 import { ChaosMode } from '../mock/chaos-mode.js';
 import { ChaosStateService } from '../mock/chaos-state.service.js';
 import { TickGeneratorService } from '../mock/tick-generator.service.js';
-import { NatsService } from '../nats/nats.service.js';
 
 import { AdminController } from './admin.controller.js';
 import { AssetParamPipe } from './asset-param.pipe.js';

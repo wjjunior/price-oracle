@@ -4,10 +4,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { TickSchema } from '@price-oracle/contracts/events';
 import { type AssetId, type Millis, type Price } from '@price-oracle/contracts/primitives';
 import { ticksSubject } from '@price-oracle/contracts/subjects';
+import { NatsService } from '@price-oracle/ingestor-transport/nats';
 import { PinoLogger } from 'nestjs-pino';
 
 import { INGESTOR_CONFIG, type IngestorConfig } from '../config/env.schema.js';
-import { NatsService } from '../nats/nats.service.js';
 
 import { ChaosMode } from './chaos-mode.js';
 import { ChaosStateService } from './chaos-state.service.js';

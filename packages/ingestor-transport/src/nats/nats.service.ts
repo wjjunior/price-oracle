@@ -1,34 +1,31 @@
 import { headers, type NatsConnection } from '@nats-io/nats-core';
 import { connect } from '@nats-io/transport-node';
-import { Inject, Injectable } from '@nestjs/common';
 import { CORRELATION_HEADER } from '@price-oracle/contracts/subjects';
-import { PinoLogger } from 'nestjs-pino';
 
-import { INGESTOR_CONFIG, type IngestorConfig } from '../config/env.schema.js';
-
+import type { NatsTransportOptions } from './options.js';
 import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import type { PinoLogger } from 'nestjs-pino';
 import type { z } from 'zod';
 
 function redactUrl(url: string): string {
   return url.replace(/\/\/[^@/]+@/, '//***@');
 }
 
-@Injectable()
 export class NatsService implements OnModuleInit, OnModuleDestroy {
   private readonly encoder = new TextEncoder();
   private connection: NatsConnection | undefined;
 
   constructor(
-    @Inject(INGESTOR_CONFIG) private readonly config: IngestorConfig,
-    @Inject(PinoLogger) private readonly logger: PinoLogger,
+    private readonly options: NatsTransportOptions,
+    private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(NatsService.name);
   }
 
   async onModuleInit(): Promise<void> {
-    this.connection = await connect({ servers: this.config.natsUrl });
+    this.connection = await connect({ servers: this.options.natsUrl });
     this.logger.info(
-      { event: 'nats.connect', url: redactUrl(this.config.natsUrl) },
+      { event: 'nats.connect', url: redactUrl(this.options.natsUrl) },
       'NATS connected',
     );
   }

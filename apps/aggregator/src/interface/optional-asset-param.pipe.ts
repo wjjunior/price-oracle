@@ -1,3 +1,5 @@
+import { inspect } from 'node:util';
+
 import { BadRequestException, Injectable, type PipeTransform } from '@nestjs/common';
 import { AssetId } from '@price-oracle/contracts/primitives';
 
@@ -11,7 +13,7 @@ export class OptionalAssetParamPipe implements PipeTransform<unknown, AssetId | 
     if (!parsed.success) {
       throw new BadRequestException({
         error: 'invalid_asset',
-        message: `unknown asset: ${String(value)}`,
+        message: `unknown asset: ${inspect(value)}`,
         allowed: AssetId.options,
       });
     }
