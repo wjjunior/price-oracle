@@ -39,12 +39,12 @@ describe('SourceHealth', () => {
 
     render(<SourceHealth now={1_050} />);
 
-    const btcGroup = document.querySelector('[data-slot="source-group"][data-asset="btc"]');
-    const ethGroup = document.querySelector('[data-slot="source-group"][data-asset="eth"]');
-    expect(within(btcGroup as HTMLElement).getByText('binance')).toBeInTheDocument();
-    expect(within(btcGroup as HTMLElement).getByText('coinbase')).toBeInTheDocument();
-    expect(within(ethGroup as HTMLElement).getByText('mock')).toBeInTheDocument();
-    expect(within(ethGroup as HTMLElement).queryByText('binance')).toBeNull();
+    const btcGroup = document.querySelector('[data-slot="source-group"][data-asset="btc"]') as HTMLElement;
+    const ethGroup = document.querySelector('[data-slot="source-group"][data-asset="eth"]') as HTMLElement;
+    expect(within(btcGroup).getByText('binance')).toBeInTheDocument();
+    expect(within(btcGroup).getByText('coinbase')).toBeInTheDocument();
+    expect(within(ethGroup).getByText('mock')).toBeInTheDocument();
+    expect(within(ethGroup).queryByText('binance')).toBeNull();
   });
 
   it('should show an empty message for an asset with no reporting sources', () => {
