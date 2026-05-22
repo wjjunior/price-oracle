@@ -1,15 +1,15 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Module, type DynamicModule } from '@nestjs/common';
 
-import { INGESTOR_CONFIG, loadIngestorConfig } from './env.schema.js';
+import { INGESTOR_CONFIG, type IngestorConfig } from './env.schema.js';
 
 @Global()
-@Module({
-  providers: [
-    {
-      provide: INGESTOR_CONFIG,
-      useFactory: () => loadIngestorConfig(),
-    },
-  ],
-  exports: [INGESTOR_CONFIG],
-})
-export class ConfigModule {}
+@Module({})
+export class ConfigModule {
+  static register(config: IngestorConfig): DynamicModule {
+    return {
+      module: ConfigModule,
+      providers: [{ provide: INGESTOR_CONFIG, useValue: config }],
+      exports: [INGESTOR_CONFIG],
+    };
+  }
+}
