@@ -2,8 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "verbatimModuleSyntax": false
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*"]
 }

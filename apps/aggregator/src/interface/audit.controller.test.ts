@@ -25,7 +25,7 @@ describe('AuditController', () => {
     const audit = { recent } as unknown as AuditPort;
     const controller = new AuditController(audit, makeLogger());
 
-    const response = await controller.audit_(25, 'btc');
+    const response = await controller.recentAudit(25, 'btc');
 
     expect(response.events).toEqual([event]);
     expect(recent).toHaveBeenCalledWith(25, 'btc');
@@ -36,7 +36,7 @@ describe('AuditController', () => {
     const audit = { recent } as unknown as AuditPort;
     const controller = new AuditController(audit, makeLogger());
 
-    await controller.audit_(DEFAULT_AUDIT_LIMIT, undefined);
+    await controller.recentAudit(DEFAULT_AUDIT_LIMIT, undefined);
 
     expect(recent).toHaveBeenCalledWith(DEFAULT_AUDIT_LIMIT, undefined);
   });

@@ -23,7 +23,7 @@ export class AuditController {
   ) {}
 
   @Get('audit')
-  async audit_(
+  async recentAudit(
     @Query('limit', AuditLimitPipe) limit: number,
     @Query('asset', OptionalAssetParamPipe) asset: AssetId | undefined,
   ): Promise<GetAuditResponse> {
