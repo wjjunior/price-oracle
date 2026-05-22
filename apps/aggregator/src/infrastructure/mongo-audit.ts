@@ -13,8 +13,11 @@ const AGGREGATE_SNAPSHOTS_COLLECTION = 'aggregate_snapshots';
 const AUDIT_INDEX_NAME = 'uniq_type_asset_source_at';
 const DUPLICATE_KEY_CODE = 11_000;
 
-const errorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error);
+const errorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'object' && error !== null) return JSON.stringify(error);
+  return String(error);
+};
 
 export class MongoAudit implements AuditPort {
   private readonly auditEvents: Collection<Document>;

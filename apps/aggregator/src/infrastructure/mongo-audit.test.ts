@@ -78,6 +78,18 @@ describe('MongoAudit', () => {
     );
   });
 
+  it('should serialize a non-Error rejection instead of stringifying it as [object Object]', async () => {
+    const mongo = fakeMongo();
+    mongo.insertOne.mockRejectedValueOnce({ reason: 'driver fault' });
+    const logger = fakeLogger();
+
+    await new MongoAudit(mongo.db, logger).append(auditEvent);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'audit.append-failed', error: '{"reason":"driver fault"}' }),
+      expect.any(String),
+    );
+  });
+
   it('should query recent events sorted by at descending with the given limit, filtering by asset when provided', async () => {
     const mongo = fakeMongo({ recent: [auditEvent] });
     const result = await new MongoAudit(mongo.db, fakeLogger()).recent(10, 'btc');
