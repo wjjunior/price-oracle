@@ -58,11 +58,9 @@ describe('aggregate', () => {
     ];
     const result = unwrap(aggregate(states, NOW, cfg));
     expect(result.price).toBe(101);
-    expect([...result.contributingSources].sort()).toEqual<SourceId[]>([
-      'binance',
-      'coinbase',
-      'mock',
-    ]);
+    expect([...result.contributingSources].sort((a, b) => a.localeCompare(b))).toEqual<
+      SourceId[]
+    >(['binance', 'coinbase', 'mock']);
   });
 
   it('should report high confidence when sources are fresh and agree', () => {
@@ -82,7 +80,9 @@ describe('aggregate', () => {
       makeState({ source: 'mock', health: 'STALE', lastPrice: 100 }),
     ];
     const result = unwrap(aggregate(states, NOW, cfg));
-    expect([...result.contributingSources].sort()).toEqual<SourceId[]>(['binance', 'coinbase']);
+    expect([...result.contributingSources].sort((a, b) => a.localeCompare(b))).toEqual<
+      SourceId[]
+    >(['binance', 'coinbase']);
     // coverage 2/3 caps confidence below the all-fresh-agreeing case.
     expect(result.confidence).toBeLessThan(1);
     expect(result.confidence).toBeCloseTo(2 / 3, 5);
