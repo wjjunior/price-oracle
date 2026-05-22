@@ -21,3 +21,17 @@ export interface DiagnosePort {
 }
 
 export const DIAGNOSE_PORT = Symbol.for('@price-oracle/aggregator/diagnose-port');
+
+export class DiagnoseRateLimitedError extends Error {
+  constructor(readonly retryAfterMs: number) {
+    super('diagnose rate limit exceeded');
+    this.name = 'DiagnoseRateLimitedError';
+  }
+}
+
+export class DiagnoseUnavailableError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = 'DiagnoseUnavailableError';
+  }
+}
