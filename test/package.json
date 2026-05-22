@@ -14,6 +14,7 @@
     "@price-oracle/contracts": "workspace:*",
     "@testcontainers/mongodb": "^10.13.0",
     "@types/node": "^22.10.0",
+    "mongodb": "^6.12.0",
     "reflect-metadata": "^0.2.2",
     "testcontainers": "^10.13.0",
     "tsx": "^4.20.0",

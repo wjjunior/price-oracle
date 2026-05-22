@@ -67,6 +67,8 @@ type AssetRuntime = {
   breaker: BreakerRuntime;
   readonly anomalyStreaks: Map<SourceId, number>;
   lastAggregate: AggregatePrice | null;
+  snapshotPending: AggregatePrice | null;
+  snapshotDraining: boolean;
 };
 
 export class Orchestrator {
@@ -104,6 +106,8 @@ export class Orchestrator {
         breaker: { state: BREAKER.CLOSED, streak: 0, openedAt: null },
         anomalyStreaks,
         lastAggregate: null,
+        snapshotPending: null,
+        snapshotDraining: false,
       });
     }
   }
@@ -211,7 +215,7 @@ export class Orchestrator {
       };
       runtime.lastAggregate = aggregatePrice;
       await this.publishAggregate(aggregatePrice, correlationId);
-      void this.recordSnapshot(aggregatePrice, correlationId);
+      this.scheduleSnapshot(runtime, aggregatePrice, correlationId);
       this.emit({
         type: 'aggregate',
         asset,
@@ -374,6 +378,29 @@ export class Orchestrator {
         },
         'Aggregate publish failed',
       );
+    }
+  }
+
+  private scheduleSnapshot(
+    runtime: AssetRuntime,
+    aggregatePrice: AggregatePrice,
+    correlationId: CorrelationId,
+  ): void {
+    runtime.snapshotPending = aggregatePrice;
+    if (runtime.snapshotDraining) return;
+    runtime.snapshotDraining = true;
+    void this.drainSnapshots(runtime, correlationId);
+  }
+
+  private async drainSnapshots(runtime: AssetRuntime, correlationId: CorrelationId): Promise<void> {
+    try {
+      while (runtime.snapshotPending !== null) {
+        const next = runtime.snapshotPending;
+        runtime.snapshotPending = null;
+        await this.recordSnapshot(next, correlationId);
+      }
+    } finally {
+      runtime.snapshotDraining = false;
     }
   }
 

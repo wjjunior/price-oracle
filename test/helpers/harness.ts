@@ -8,9 +8,13 @@ export type Stack = {
   readonly mockUrl: string;
   readonly aggUrl: string;
   stopMock: () => Promise<void>;
-  restartAggregator: () => Promise<void>;
+  stopAggregator: () => Promise<void>;
+  startAggregator: () => Promise<void>;
   close: () => Promise<void>;
 };
+
+export const mongoUrlForTests = (mongoUrl: string): string =>
+  withDatabase(mongoUrl, MONGO_DB_NAME);
 
 const ENV_KEYS = [
   'NATS_URL',
@@ -106,9 +110,12 @@ export async function startStack(env: { natsUrl: string; mongoUrl: string }): Pr
     mockApp = undefined;
   };
 
-  const restartAggregator = async (): Promise<void> => {
+  const stopAggregator = async (): Promise<void> => {
     await aggApp?.close();
     aggApp = undefined;
+  };
+
+  const startAggregator = async (): Promise<void> => {
     await bootAggregator();
   };
 
@@ -134,7 +141,8 @@ export async function startStack(env: { natsUrl: string; mongoUrl: string }): Pr
     mockUrl: `http://127.0.0.1:${MOCK_HTTP_PORT}`,
     aggUrl: `http://127.0.0.1:${AGGREGATOR_HTTP_PORT}`,
     stopMock,
-    restartAggregator,
+    stopAggregator,
+    startAggregator,
     close,
   };
 }

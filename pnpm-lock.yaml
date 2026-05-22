@@ -380,6 +380,9 @@ importers:
       '@types/node':
         specifier: ^22.10.0
         version: 22.19.19
+      mongodb:
+        specifier: ^6.12.0
+        version: 6.21.0
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
