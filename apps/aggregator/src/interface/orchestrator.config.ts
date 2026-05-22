@@ -4,7 +4,7 @@ import { z } from 'zod';
 import type { OrchestratorConfig } from '../application/orchestrator.js';
 
 const DEFAULT_ASSETS = 'btc,eth';
-const DEFAULT_SOURCES = 'binance,coinbase,mock';
+const DEFAULT_SOURCES = 'mock';
 
 const splitCsv = (value: string): string[] =>
   value
@@ -32,9 +32,9 @@ const OrchestratorEnvSchema = z.object({
   AGGREGATOR_ASSETS: assetsSchema,
   AGGREGATOR_SOURCES: sourcesSchema,
   AGGREGATION_INTERVAL_MS: z.coerce.number().int().positive().default(500),
-  FRESHNESS_DECAY_MS: z.coerce.number().int().positive().default(10_000),
-  DEGRADED_AFTER_MS: z.coerce.number().int().positive().default(2_000),
-  STALE_AFTER_MS: z.coerce.number().int().positive().default(5_000),
+  FRESHNESS_DECAY_MS: z.coerce.number().int().positive().default(12_000),
+  DEGRADED_AFTER_MS: z.coerce.number().int().positive().default(5_000),
+  STALE_AFTER_MS: z.coerce.number().int().positive().default(12_000),
   HEALTH_HYSTERESIS_STREAK: z.coerce.number().int().positive().default(3),
   BREAKER_CONFIDENCE_FLOOR: z.coerce.number().min(0).max(1).default(0.6),
   BREAKER_TRIP_STREAK: z.coerce.number().int().positive().default(6),

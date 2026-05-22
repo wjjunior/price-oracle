@@ -6,10 +6,18 @@ describe('buildOrchestratorConfig', () => {
   it('should apply production defaults when env is empty', () => {
     const cfg = buildOrchestratorConfig({});
     expect(cfg.assets).toEqual(['btc', 'eth']);
-    expect(cfg.sources).toEqual(['binance', 'coinbase', 'mock']);
+    expect(cfg.sources).toEqual(['mock']);
     expect(cfg.aggregationIntervalMs).toBe(500);
     expect(cfg.breaker.recoveryWindowMs).toBe(30_000);
     expect(cfg.breaker.tripStreak).toBe(6);
+  });
+
+  it('should default to thresholds tuned to tolerate real-feed jitter', () => {
+    const cfg = buildOrchestratorConfig({});
+    expect(cfg.thresholds.degradedAfterMs).toBe(5_000);
+    expect(cfg.thresholds.staleAfterMs).toBe(12_000);
+    expect(cfg.thresholds.freshnessDecayMs).toBe(12_000);
+    expect(cfg.thresholds.healthHysteresisStreak).toBe(3);
   });
 
   it('should override sources and timing from env for fast deterministic runs', () => {
