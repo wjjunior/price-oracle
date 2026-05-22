@@ -249,6 +249,31 @@ describe('Orchestrator', () => {
     ).toBe(true);
   });
 
+  it('should re-open the breaker on a single below-floor probe while HALF_OPEN', async () => {
+    const open = 1_000_000;
+    for (let i = 0; i < config.breaker.tripStreak; i += 1) {
+      await h.orchestrator.pulse(open + i);
+    }
+
+    const afterRecovery = open + config.breaker.recoveryWindowMs + 1_000;
+    feedHealthy(h.orchestrator, 'btc', config.sources, 50_000, afterRecovery);
+    await h.orchestrator.pulse(afterRecovery);
+    expect(
+      h.audit.appended.some(
+        (e) => e.type === 'BreakerStateChanged' && e.to === 'HALF_OPEN' && e.asset === 'btc',
+      ),
+    ).toBe(true);
+
+    const before = h.audit.appended.length;
+    const reopenAt = afterRecovery + config.thresholds.staleAfterMs + 1_000;
+    await h.orchestrator.pulse(reopenAt);
+
+    const reopen = h.audit.appended
+      .slice(before)
+      .filter((e) => e.type === 'BreakerStateChanged' && e.to === 'OPEN' && e.asset === 'btc');
+    expect(reopen).toHaveLength(1);
+  });
+
   it('should emit an AnomalyDetected audit event after streakLength consecutive drift cycles', async () => {
     const now = 1_000_000;
     for (let i = 0; i <= config.anomaly.streakLength; i += 1) {
