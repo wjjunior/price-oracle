@@ -6,7 +6,7 @@ DASHBOARD_URL := http://localhost:5173
 AGGREGATOR_URL := http://localhost:7402
 
 .DEFAULT_GOAL := help
-.PHONY: help up up-full down
+.PHONY: help up up-full up-real down
 
 help: ## Show available commands
 	@echo "Price Oracle - local run control"
@@ -34,6 +34,13 @@ up-full: node_modules ## Same as 'up' plus the real binance + coinbase ingestors
 	@echo "Infra healthy. Dashboard: $(DASHBOARD_URL)  |  Aggregator API: $(AGGREGATOR_URL)"
 	@echo ""
 	pnpm run dev:full
+
+up-real: node_modules ## Real feeds only (binance + coinbase, no mock; needs network)
+	$(COMPOSE) up -d --wait
+	@echo ""
+	@echo "Infra healthy. Dashboard: $(DASHBOARD_URL)  |  Aggregator API: $(AGGREGATOR_URL)"
+	@echo ""
+	pnpm run dev:real
 
 down: ## Stop the local infra (NATS + MongoDB); keeps the Mongo volume
 	$(COMPOSE) down
