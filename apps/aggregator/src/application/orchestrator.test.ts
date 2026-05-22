@@ -334,7 +334,6 @@ describe('Orchestrator', () => {
     }
     expect(mockAnomalies()).toHaveLength(1);
 
-    // Source recovers within tolerance, re-arming the detector.
     healthyCycle(now);
     await h.orchestrator.pulse(now);
     now += 1;

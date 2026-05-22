@@ -299,9 +299,6 @@ export class Orchestrator {
         continue;
       }
       const prevStreak = runtime.anomalyStreaks.get(source) ?? 0;
-      // Edge-triggered: emit once when the drift streak first reaches the threshold, then stay
-      // armed (the counter holds at streakLength) until the source recovers within tolerance.
-      // This prevents a sustained drift from re-emitting an AnomalyDetected event every cycle.
       if (prevStreak >= this.config.anomaly.streakLength) {
         continue;
       }
