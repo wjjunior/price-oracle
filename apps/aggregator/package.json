@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "start": "tsx src/main.ts",
+    "dev": "tsx watch src/main.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:coverage": "vitest run --coverage"
@@ -11,15 +13,26 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.97.1",
     "@nats-io/nats-core": "^3.0.0",
+    "@nats-io/transport-node": "^3.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
     "@price-oracle/contracts": "workspace:*",
     "mongodb": "^6.12.0",
+    "nestjs-pino": "^4.4.0",
     "pino": "^9.5.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@nestjs/testing": "^11.0.0",
     "@types/node": "^22.19.19",
+    "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.7",
     "fast-check": "^4.1.1",
+    "supertest": "^7.2.2",
+    "tsx": "^4.20.0",
     "vitest": "^4.1.6"
   }
 }

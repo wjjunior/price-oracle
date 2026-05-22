@@ -19,7 +19,7 @@ const fakeCursor = (docs: unknown[]) => {
 
 const fakeMongo = (reads: { recent?: unknown[]; snapshot?: unknown } = {}) => {
   const cursor = fakeCursor(reads.recent ?? []);
-  const insertOne = vi.fn(async () => ({}));
+  const insertOne = vi.fn(async (_doc: Record<string, unknown>) => ({}));
   const find = vi.fn(() => cursor);
   const findOne = vi.fn(async () => reads.snapshot ?? null);
   const replaceOne = vi.fn(async () => ({}));
@@ -53,6 +53,19 @@ describe('MongoAudit', () => {
     const mongo = fakeMongo();
     await new MongoAudit(mongo.db, fakeLogger()).append(auditEvent);
     expect(mongo.insertOne).toHaveBeenCalledWith(auditEvent);
+  });
+
+  it('should insert a copy so the driver cannot mutate the caller event with _id', async () => {
+    const mongo = fakeMongo();
+    mongo.insertOne.mockImplementationOnce(async (doc: Record<string, unknown>) => {
+      doc._id = 'generated';
+      return {};
+    });
+    const event = { ...auditEvent };
+    const snapshot = structuredClone(event);
+
+    await new MongoAudit(mongo.db, fakeLogger()).append(event);
+    expect(event).toEqual(snapshot);
   });
 
   it('should treat a duplicate-key error as an idempotent no-op', async () => {

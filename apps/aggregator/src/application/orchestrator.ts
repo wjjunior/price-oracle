@@ -172,6 +172,15 @@ export class Orchestrator {
     return this.runtime.get(asset)?.lastAggregate ?? null;
   }
 
+  getSourceStates(asset: AssetId): readonly SourceState[] {
+    const runtime = this.runtime.get(asset);
+    return runtime ? [...runtime.sources.values()] : [];
+  }
+
+  getBreakerState(asset: AssetId): BreakerState {
+    return this.runtime.get(asset)?.breaker.state ?? BREAKER.CLOSED;
+  }
+
   onEvent(listener: (envelope: SseEnvelope) => void): () => void {
     this.emitter.on(SSE_EVENT, listener);
     return (): void => {
