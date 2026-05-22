@@ -298,12 +298,15 @@ export class Orchestrator {
         runtime.anomalyStreaks.set(source, 0);
         continue;
       }
-      const streak = (runtime.anomalyStreaks.get(source) ?? 0) + 1;
-      if (streak < this.config.anomaly.streakLength) {
-        runtime.anomalyStreaks.set(source, streak);
+      const prevStreak = runtime.anomalyStreaks.get(source) ?? 0;
+      if (prevStreak >= this.config.anomaly.streakLength) {
         continue;
       }
-      runtime.anomalyStreaks.set(source, 0);
+      const streak = prevStreak + 1;
+      runtime.anomalyStreaks.set(source, streak);
+      if (streak < this.config.anomaly.streakLength) {
+        continue;
+      }
       const event = buildAnomalyDetectedEvent({
         asset,
         source,
