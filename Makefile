@@ -5,6 +5,13 @@ COMPOSE := docker compose -f infra/docker-compose.yml
 DASHBOARD_URL := http://localhost:5173
 AGGREGATOR_URL := http://localhost:7402
 
+# Load .env (when present) and pass it to the app processes, so overrides like
+# ANTHROPIC_API_KEY take effect. Absent .env keeps the zero-secret core path.
+ifneq (,$(wildcard .env))
+include .env
+export
+endif
+
 .DEFAULT_GOAL := help
 .PHONY: help up up-full up-real down
 
