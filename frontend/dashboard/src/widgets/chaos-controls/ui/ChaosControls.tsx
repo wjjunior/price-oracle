@@ -1,13 +1,9 @@
-import {
-  CHAOS_SCENARIOS,
-  RESET_ALL_KEY,
-  chaosActionKey,
-  type ChaosScenario,
-} from '../model/scenario.js';
+import { CHAOS_SCENARIOS, type ChaosScenario } from '../model/scenario.js';
 
 import type { AssetId } from '@price-oracle/contracts/primitives';
 import type { JSX } from 'react';
 
+import { RESET_ALL_KEY, chaosActionKey } from '@/features/inject-failure';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 
