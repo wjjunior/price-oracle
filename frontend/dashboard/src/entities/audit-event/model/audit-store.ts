@@ -5,7 +5,7 @@ import type { AuditEvent } from '@price-oracle/contracts/events';
 
 export const MAX_AUDIT_EVENTS = 200;
 
-function auditKey(event: AuditEvent): string {
+export function auditEventKey(event: AuditEvent): string {
   const asset = 'asset' in event ? event.asset : '';
   const source = 'source' in event ? event.source : '';
   return `${event.type}|${asset}|${source}|${event.at}`;
@@ -15,7 +15,7 @@ function merge(existing: readonly AuditEvent[], incoming: readonly AuditEvent[])
   const seen = new Set<string>();
   const deduped: AuditEvent[] = [];
   for (const event of [...incoming, ...existing]) {
-    const key = auditKey(event);
+    const key = auditEventKey(event);
     if (seen.has(key)) continue;
     seen.add(key);
     deduped.push(event);

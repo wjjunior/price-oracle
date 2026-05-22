@@ -34,3 +34,7 @@ export const useSourceStore = create<SourceStoreState>()(
 export function useSource(asset: AssetId, source: SourceId): SourceState | undefined {
   return useSourceStore((state) => state.byAsset[asset][source]);
 }
+
+export function useSourcesByAsset(asset: AssetId): Partial<Record<SourceId, SourceState>> {
+  return useSourceStore((state) => state.byAsset[asset]);
+}
