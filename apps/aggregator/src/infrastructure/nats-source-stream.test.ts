@@ -87,7 +87,7 @@ describe('NatsSourceStream', () => {
     const logger = fakeLogger();
     new NatsSourceStream(nats.connection, logger).subscribe(onTick);
 
-    nats.emit(natsMsg(validTick, undefined));
+    nats.emit(natsMsg(validTick));
 
     expect(onTick).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalled();
