@@ -41,7 +41,7 @@ apps/ingestor-mock/
     │   ├── env.schema.test.ts
     │   └── config.module.ts
     ├── nats/
-    │   ├── nats.service.ts              # connect, publishContract, publishRaw, disconnect
+    │   ├── nats.service.ts              # connect/drain, publishContract, publishRaw
     │   └── nats.module.ts
     ├── mock/
     │   ├── chaos-mode.ts                # const ChaosMode = { … } as const
@@ -98,7 +98,6 @@ Per-tick algorithm (for each of `['btc', 'eth']`):
 ```
 state = chaosState.get(asset)
 correlationId = randomUUID()
-headers = { 'x-correlation-id': correlationId }
 now = Date.now()
 
 switch (state.mode):
@@ -109,7 +108,7 @@ switch (state.mode):
       TickSchema,
       ticksSubject(asset, 'mock'),
       { asset, source: 'mock', price, receivedAt: now, sourceTimestamp: now },
-      { headers },
+      correlationId,
     )
 
   case 'disconnected':
@@ -121,18 +120,18 @@ switch (state.mode):
       ticksSubject(asset, 'mock'),
       { asset, source: 'mock', price: state.frozenPrice, receivedAt: now,
         sourceTimestamp: state.frozenSourceTimestamp },
-      { headers },
+      correlationId,
     )
 
   case 'malformed':
     nats.publishRaw(
       ticksSubject(asset, 'mock'),
       JSON.stringify({ asset, source: 'mock', price: null, receivedAt: now }),
-      { headers },
+      correlationId,
     )
 ```
 
-`publishContract` validates against the supplied schema before encoding — this guarantees the `healthy` and `stale` paths emit only Zod-valid payloads. `publishRaw` bypasses validation; it is the only call site that produces invalid payloads and is reserved for `malformed`.
+`NatsService` stamps the `correlation-id` NATS header from the `correlationId` argument (matching the Binance/Coinbase ingestors). `publishContract` `safeParse`s against the supplied schema before encoding — the `healthy` and `stale` paths emit only Zod-valid payloads. `publishRaw` bypasses validation; it is the only call site that produces invalid payloads and is reserved for `malformed`.
 
 `Date.now()` and `randomUUID()` live in the generator service (infrastructure) — not in a pure module — which is consistent with CLAUDE.md rule 16 (domain layer purity does not apply to thin Nest services).
 
@@ -153,13 +152,12 @@ Pure function; `RandFn` injected so tests can drive deterministic sequences. No 
 
 ## NATS adapter
 
-`NatsService` wraps the official `nats` client:
+`NatsService` wraps the `@nats-io/nats-core` + `@nats-io/transport-node` client (the same stack as the Binance/Coinbase ingestors) and injects `PinoLogger`:
 
-- `onModuleInit`: connect to `NATS_URL` with reconnect enabled (fixed 1 s reconnect wait, unlimited attempts — the nats client's defaults suffice for this local/prototype scope; the 30 s capped exponential backoff in Notion AC-2 governs the real ingestors' exchange-WebSocket reconnect, not the mock's NATS client). `onModuleDestroy` drains, guarding `drain()` failures at `warn` (`nats.drain-failed`).
-- `onModuleDestroy`: drain and close.
-- `publishContract<T>(schema, subject, payload, opts)`: validates `payload` via `schema.parse`, encodes with the NATS JSON codec, publishes with `opts.headers` applied as `Headers`.
-- `publishRaw(subject, bytes, opts)`: publishes a raw byte buffer (or string) with the supplied headers — no validation. Used only by the malformed path.
-- Publish failures log `warn` (`event: 'nats.publish-failed'`) and do not throw — the generator must keep pulsing.
+- `onModuleInit`: `connect({ servers: config.natsUrl })` (client defaults handle reconnect). `onModuleDestroy`: `drain()`.
+- `publishContract<S>(schema, subject, payload, correlationId)`: `safeParse`s `payload`; on failure logs `warn` (`event: 'nats.publish.invalid'`) and returns without publishing; otherwise encodes and publishes with a `correlation-id` header.
+- `publishRaw(subject, body, correlationId)`: mock-only; publishes the raw body (no validation) with a `correlation-id` header, for the `malformed` path.
+- Both publish paths skip with `warn` (`nats.publish.skipped`) when the connection is not ready and catch publish errors at `warn` (`nats.publish.failed`) — never throwing, so the generator keeps pulsing.
 
 ## Admin HTTP contract
 
@@ -181,41 +179,43 @@ A repeat command on a mode that is already active returns the current state with
 
 ## Configuration
 
-A single config module per app (CLAUDE.md rule 11). All env vars read once at boot, Zod-validated, exposed via `INGESTOR_CONFIG` DI token.
+A single config module per app (CLAUDE.md rule 11). All env vars read once at boot, Zod-validated, and mapped to a camelCase `IngestorConfig` exposed via the `INGESTOR_CONFIG = Symbol.for('@price-oracle/ingestor-mock/config')` DI token — matching the sibling ingestors. `NATS_URL` is protocol-constrained (`/^nats$/i`) so a non-`nats` scheme fails fast.
 
 ```typescript
-export const EnvSchema = z.object({
+const NatsUrl = z.url({ error: 'must be a full URL with scheme', protocol: /^nats$/i });
+
+const EnvSchema = z.object({
   MOCK_HTTP_PORT: z.coerce.number().int().positive().default(7401),
   MOCK_TICK_INTERVAL_MS: z.coerce.number().int().positive().default(250),
   MOCK_BTC_ANCHOR_USD: z.coerce.number().positive().default(95_000),
   MOCK_ETH_ANCHOR_USD: z.coerce.number().positive().default(3_500),
   MOCK_PRICE_VOLATILITY_PCT: z.coerce.number().nonnegative().default(0.001),
-  NATS_URL: z.string().url().default('nats://localhost:4222'),
-  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  NATS_URL: NatsUrl.default('nats://localhost:4222'),
 });
+
+// loadIngestorConfig(env) → { httpPort, tickIntervalMs, btcAnchorUsd, ethAnchorUsd, priceVolatilityPct, natsUrl }
 ```
 
-Invalid input → the process fails to boot.
+There is no `LOG_LEVEL` env var; pino is configured statically in `app.module.ts` (`LoggerModule.forRoot`) with the same formatters as the sibling ingestors. Invalid input → the process fails to boot.
 
 ## Logging
 
-`pino`, JSON. Bound static fields per scope via `logger.child({ service: 'ingestor-mock' })`. Event taxonomy (CLAUDE.md rule 20):
+`pino` via `nestjs-pino`, JSON. `service: 'ingestor-mock'` is bound by `LoggerModule.forRoot`; each service injects `PinoLogger` and calls `setContext(...)`. Event taxonomy (CLAUDE.md rule 20):
 
-| Level   | Events                                                                                           |
-| ------- | ------------------------------------------------------------------------------------------------ |
-| `info`  | `lifecycle.start`, `lifecycle.stop`, `chaos.mode-changed`, `nats.connected`, `nats.disconnected` |
-| `warn`  | `nats.publish-failed`, `nats.reconnecting`                                                       |
-| `debug` | `tick.published` (high-volume; off in prod by default)                                           |
+| Level  | Events                                                          |
+| ------ | -------------------------------------------------------------- |
+| `info` | `nats.connect`, `lifecycle.start`, `lifecycle.stop`            |
+| `warn` | `nats.publish.invalid`, `nats.publish.skipped`, `nats.publish.failed` |
 
-Every tick log line carries `event`, `asset`, `sourceId: 'mock'`, `correlationId`. `chaos.mode-changed` lines carry `asset`, `from`, `to`.
+Publish-failure log lines carry `event`, `subject`, and `correlationId`. The mock does not log per tick (publication is the high-volume product, not an operational event); the operator observes ticks on `ticks.<asset>.mock` and the `correlation-id` header.
 
 ## Error handling
 
 - **Zod failure on env**: process exits with code 1 at boot.
 - **Boot failure (unreachable NATS at cold start, invalid env)**: the mock requires NATS reachable at startup (`reconnect: true` covers drops _after_ the first connection, not the cold start). Because such failures occur before the pino logger is flushed, `bootstrap()` catches them, emits a single structured fatal line (`event: 'bootstrap.failed'`) with an operator hint ("ensure `pnpm dev:infra` is running"), and exits non-zero — never a raw unhandled-rejection stack. Cold-start bus-dependence is acceptable for a dev/chaos tool; true degradation-under-outage is the aggregator's responsibility (Notion §7.3, §7.5).
 - **Zod failure on admin :asset**: 400 JSON error envelope (Nest exception filter).
-- **NATS publish failure**: caught inside `NatsService.publishContract` / `publishRaw`; logged at `warn`; the interval continues. A persistent disconnect surfaces via NATS reconnect events at `warn`.
-- **Schema-validated publish path**: an unexpected internal payload that fails `schema.parse` inside `publishContract` is a programmer error — logged at `error` and rethrown. This cannot be triggered by the chaos endpoints because those go through the dedicated `publishRaw` for `malformed`.
+- **NATS publish failure / connection not ready**: caught inside `NatsService`; logged at `warn` (`nats.publish.failed` / `nats.publish.skipped`); the interval continues.
+- **Contract validation failure on publish**: `publishContract` `safeParse`s the payload and, on failure, logs `warn` (`nats.publish.invalid`) and returns without publishing — it never throws. The chaos `malformed` path deliberately bypasses this via `publishRaw`.
 
 ## Per-asset isolation
 

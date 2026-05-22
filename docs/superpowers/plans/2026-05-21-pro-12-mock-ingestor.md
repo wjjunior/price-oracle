@@ -14,6 +14,8 @@
 
 **Branch:** `feat/PRO-12-mock-ingestor` (already created).
 
+> **Post-implementation alignment (read this):** after the sibling Binance/Coinbase ingestors landed on `main`, the mock's infrastructure was aligned to their conventions. The code (and the spec) are the source of truth where the task snippets below differ. The deltas: NATS client is `@nats-io/nats-core` + `@nats-io/transport-node` (not `nats`); the correlation header is **`correlation-id`** (not `x-correlation-id`) and is stamped by `NatsService` from a positional `correlationId` argument (`publishContract(schema, subject, payload, correlationId)` using `safeParse`); config maps to a camelCase `IngestorConfig` via `loadIngestorConfig` with a `Symbol.for(...)` token and a protocol-constrained `NatsUrl` (no `LOG_LEVEL`); services inject `PinoLogger`; `main.ts` uses explicit `process.once` SIGTERM/SIGINT handlers (exit 130 on SIGINT) plus a try/catch bootstrap fatal line, without `enableShutdownHooks`.
+
 ---
 
 ## File structure
@@ -880,7 +882,7 @@ describe('TickGeneratorService', () => {
     await vi.advanceTimersByTimeAsync(500);
     expect(captured.length).toBeGreaterThan(0);
     for (const c of captured) {
-      expect(c.headers?.['x-correlation-id']).toMatch(/^[0-9a-f-]{36}$/);
+      expect(c.headers?.['correlation-id']).toMatch(/^[0-9a-f-]{36}$/);
     }
   });
 });
@@ -911,7 +913,7 @@ import { nextPrice } from './random-walk.js';
 
 const ASSETS: readonly AssetId[] = ['btc', 'eth'];
 const MOCK_SOURCE = 'mock' as const;
-const CORRELATION_HEADER = 'x-correlation-id';
+const CORRELATION_HEADER = 'correlation-id';
 
 export interface LastPublished {
   readonly price: Price;
@@ -1440,7 +1442,7 @@ Expected stdout: `nats.connected` line within a second, `lifecycle.start` line i
 Install nats CLI if absent (`brew install nats-io/nats-tools/nats`), then:
 
 Run: `nats sub 'ticks.>'`
-Expected: ticks for both `ticks.btc.mock` and `ticks.eth.mock` arrive at ~250 ms cadence, each with a header `x-correlation-id`.
+Expected: ticks for both `ticks.btc.mock` and `ticks.eth.mock` arrive at ~250 ms cadence, each with a header `correlation-id`.
 
 - [ ] **Step 10.4: Exercise admin endpoints**
 
