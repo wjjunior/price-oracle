@@ -3,8 +3,11 @@ import { LoggerModule } from 'nestjs-pino';
 
 import { AdminModule } from './admin/admin.module.js';
 import { ConfigModule } from './config/config.module.js';
+import { loadIngestorConfig } from './config/env.schema.js';
 import { MockModule } from './mock/mock.module.js';
 import { NatsModule } from './nats/nats.module.js';
+
+const config = loadIngestorConfig();
 
 @Module({
   imports: [
@@ -18,7 +21,7 @@ import { NatsModule } from './nats/nats.module.js';
     ConfigModule,
     NatsModule,
     MockModule,
-    AdminModule,
+    AdminModule.register(config.adminEnabled),
   ],
 })
 export class AppModule {}

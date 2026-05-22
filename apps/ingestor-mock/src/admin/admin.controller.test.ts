@@ -16,6 +16,7 @@ const fakeConfig: IngestorConfig = {
   btcAnchorUsd: 95_000,
   ethAnchorUsd: 3_500,
   priceVolatilityPct: 0.001,
+  adminEnabled: true,
   natsUrl: 'nats://localhost:4222',
 };
 
