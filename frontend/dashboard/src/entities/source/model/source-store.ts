@@ -7,6 +7,7 @@ import type { AssetId, SourceId } from '@price-oracle/contracts/primitives';
 type SourceStoreState = {
   byAsset: Record<AssetId, Partial<Record<SourceId, SourceState>>>;
   setSource: (state: SourceState) => void;
+  setSources: (states: readonly SourceState[]) => void;
 };
 
 export const useSourceStore = create<SourceStoreState>()(
@@ -19,6 +20,14 @@ export const useSourceStore = create<SourceStoreState>()(
           [state.asset]: { ...prev.byAsset[state.asset], [state.source]: state },
         },
       })),
+    setSources: (states): void =>
+      set((prev) => {
+        const byAsset = { ...prev.byAsset };
+        for (const state of states) {
+          byAsset[state.asset] = { ...byAsset[state.asset], [state.source]: state };
+        }
+        return { byAsset };
+      }),
   })),
 );
 

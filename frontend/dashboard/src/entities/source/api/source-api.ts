@@ -11,6 +11,5 @@ export function applySourceHealthEnvelope(envelope: SourceHealthEnvelope): void 
 }
 
 export function hydrateFromSnapshot(snapshot: GetSnapshotResponse): void {
-  const { setSource } = useSourceStore.getState();
-  for (const source of snapshot.sources) setSource(source);
+  useSourceStore.getState().setSources(snapshot.sources);
 }

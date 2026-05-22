@@ -48,6 +48,18 @@ describe('useSourceStore', () => {
     unsubscribe();
     expect(listener).toHaveBeenCalledTimes(1);
   });
+
+  it('should apply many sources in a single store update via setSources', () => {
+    const stateChanges = vi.fn();
+    const unsubscribe = useSourceStore.subscribe(stateChanges);
+    useSourceStore
+      .getState()
+      .setSources([sourceState('btc', 'binance'), sourceState('btc', 'coinbase')]);
+    unsubscribe();
+    expect(stateChanges).toHaveBeenCalledTimes(1);
+    expect(useSourceStore.getState().byAsset.btc.binance).toBeDefined();
+    expect(useSourceStore.getState().byAsset.btc.coinbase).toBeDefined();
+  });
 });
 
 describe('useSource', () => {
