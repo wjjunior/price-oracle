@@ -7,7 +7,8 @@ export const MAX_AUDIT_EVENTS = 200;
 
 function auditKey(event: AuditEvent): string {
   const asset = 'asset' in event ? event.asset : '';
-  return `${event.type}|${asset}|${event.at}`;
+  const source = 'source' in event ? event.source : '';
+  return `${event.type}|${asset}|${source}|${event.at}`;
 }
 
 function merge(existing: readonly AuditEvent[], incoming: readonly AuditEvent[]): AuditEvent[] {

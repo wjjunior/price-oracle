@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { MAX_AUDIT_EVENTS, useAuditStore } from './audit-store.js';
 
-const ssc = (at: number) =>
-  buildSourceStateChangedEvent({ asset: 'btc', source: 'binance', from: 'HEALTHY', to: 'DEGRADED', at });
+const ssc = (at: number, source: 'binance' | 'coinbase' | 'mock' = 'binance') =>
+  buildSourceStateChangedEvent({ asset: 'btc', source, from: 'HEALTHY', to: 'DEGRADED', at });
 
 beforeEach(() => useAuditStore.setState({ events: [] }));
 
@@ -15,9 +15,14 @@ describe('useAuditStore', () => {
     expect(useAuditStore.getState().events.map((e) => e.at)).toEqual([2_000, 1_000]);
   });
 
-  it('should deduplicate by content (type, asset, at), not by insertion order', () => {
+  it('should deduplicate by content (type, asset, source, at), not by insertion order', () => {
     useAuditStore.getState().seed([ssc(1_000), ssc(2_000)]);
     useAuditStore.getState().append(ssc(1_000));
+    expect(useAuditStore.getState().events).toHaveLength(2);
+  });
+
+  it('should keep two same-timestamp events that differ only by source', () => {
+    useAuditStore.getState().seed([ssc(1_000, 'binance'), ssc(1_000, 'coinbase')]);
     expect(useAuditStore.getState().events).toHaveLength(2);
   });
 
