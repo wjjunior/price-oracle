@@ -96,7 +96,10 @@ describe('BinanceService.handleMessage', () => {
   it('should publish a mapped tick for a valid trade frame', () => {
     svc.handleMessage(Buffer.from(JSON.stringify(readFixture('trade.json'))));
     expect(captured).toHaveLength(1);
-    const first = captured[0]!;
+    const first = captured[0];
+    if (first === undefined) {
+      expect.fail('expected exactly one captured publish');
+    }
     expect(first.subject).toBe(ticksSubject('btc', 'binance'));
     const tick = TickSchema.parse(first.payload);
     expect(tick).toMatchObject({ asset: 'btc', source: 'binance', price: 95000.5 });
@@ -107,7 +110,10 @@ describe('BinanceService.handleMessage', () => {
   it('should publish a mapped tick for an ETH trade frame', () => {
     svc.handleMessage(Buffer.from(JSON.stringify(readFixture('trade-eth.json'))));
     expect(captured).toHaveLength(1);
-    const first = captured[0]!;
+    const first = captured[0];
+    if (first === undefined) {
+      expect.fail('expected exactly one captured publish');
+    }
     expect(first.subject).toBe(ticksSubject('eth', 'binance'));
     const tick = TickSchema.parse(first.payload);
     expect(tick).toMatchObject({ asset: 'eth', source: 'binance', price: 3500.25 });

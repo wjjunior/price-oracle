@@ -19,6 +19,22 @@ import type { z } from 'zod';
 const readFixture = (name: string): unknown =>
   JSON.parse(readFileSync(new URL(`./__fixtures__/${name}`, import.meta.url), 'utf8'));
 
+type MarketTradesFrame = {
+  events: { trades: Record<string, unknown>[] }[];
+};
+
+const firstTradeFromFrame = (frame: MarketTradesFrame): Record<string, unknown> => {
+  const event = frame.events[0];
+  if (event === undefined) {
+    expect.fail('fixture must have at least one event');
+  }
+  const trade = event.trades[0];
+  if (trade === undefined) {
+    expect.fail('fixture must have at least one trade');
+  }
+  return trade;
+};
+
 type Captured = {
   schema: z.ZodType<unknown>;
   subject: string;
@@ -65,10 +81,8 @@ describe('FrameSchema', () => {
 
 describe('TradeSchema', () => {
   const tradeFixture = (): Record<string, unknown> => {
-    const frame = readFixture('market-trades.json') as {
-      events: { trades: Record<string, unknown>[] }[];
-    };
-    return frame.events[0]!.trades[0]!;
+    const frame = readFixture('market-trades.json') as MarketTradesFrame;
+    return firstTradeFromFrame(frame);
   };
 
   it('should reject a trade missing price', () => {
@@ -115,7 +129,10 @@ describe('CoinbaseService.handleMessage', () => {
   it('should publish a mapped tick for a valid market_trades update frame', () => {
     svc.handleMessage(Buffer.from(JSON.stringify(readFixture('market-trades.json'))));
     expect(captured).toHaveLength(1);
-    const first = captured[0]!;
+    const first = captured[0];
+    if (first === undefined) {
+      expect.fail('expected exactly one captured publish');
+    }
     expect(first.subject).toBe(ticksSubject('btc', 'coinbase'));
     const tick = TickSchema.parse(first.payload);
     expect(tick).toMatchObject({ asset: 'btc', source: 'coinbase', price: 95000.5 });
@@ -142,10 +159,8 @@ describe('CoinbaseService.handleMessage', () => {
   });
 
   it('should warn ws.trade.unknown_product and not publish for an unknown product', () => {
-    const frame = readFixture('market-trades.json') as {
-      events: { trades: Record<string, unknown>[] }[];
-    };
-    frame.events[0]!.trades[0]!.product_id = 'XRP-USD';
+    const frame = readFixture('market-trades.json') as MarketTradesFrame;
+    firstTradeFromFrame(frame).product_id = 'XRP-USD';
     svc.handleMessage(Buffer.from(JSON.stringify(frame)));
     expect(captured).toHaveLength(0);
     expect(fakeLogger.warn).toHaveBeenCalledWith(
