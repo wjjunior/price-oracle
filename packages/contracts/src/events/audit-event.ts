@@ -58,3 +58,23 @@ export const AuditEventSchema = z.discriminatedUnion('type', [
   DiagnoseAnsweredSchema,
 ]);
 export type AuditEvent = z.infer<typeof AuditEventSchema>;
+
+export const buildSourceStateChangedEvent = (
+  params: Omit<SourceStateChanged, 'type'>,
+): SourceStateChanged => ({ type: SourceStateChangedSchema.shape.type.value, ...params });
+
+export const buildBreakerStateChangedEvent = (
+  params: Omit<BreakerStateChanged, 'type'>,
+): BreakerStateChanged => ({ type: BreakerStateChangedSchema.shape.type.value, ...params });
+
+export const buildAnomalyDetectedEvent = (
+  params: Omit<AnomalyDetected, 'type'>,
+): AnomalyDetected => ({ type: AnomalyDetectedSchema.shape.type.value, ...params });
+
+export const buildDiagnoseRequestedEvent = (
+  params: Omit<DiagnoseRequested, 'type'>,
+): DiagnoseRequested => ({ type: DiagnoseRequestedSchema.shape.type.value, ...params });
+
+export const buildDiagnoseAnsweredEvent = (
+  params: Omit<DiagnoseAnswered, 'type'>,
+): DiagnoseAnswered => ({ type: DiagnoseAnsweredSchema.shape.type.value, ...params });
