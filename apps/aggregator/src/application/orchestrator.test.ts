@@ -65,14 +65,21 @@ class FakePublisher implements PublishPort {
 
 class FakeAudit implements AuditPort {
   readonly appended: AuditEvent[] = [];
+  readonly recorded: AggregatePrice[] = [];
   readonly snapshots = new Map<AssetId, AggregatePrice | null>();
   rejectAppend: Error | null = null;
+  rejectRecord: Error | null = null;
   async append(event: AuditEvent): Promise<void> {
     if (this.rejectAppend) throw this.rejectAppend;
     this.appended.push(event);
   }
   async recent(): Promise<readonly AuditEvent[]> {
     return [];
+  }
+  async recordAggregate(aggregate: AggregatePrice): Promise<void> {
+    if (this.rejectRecord) throw this.rejectRecord;
+    this.recorded.push(aggregate);
+    this.snapshots.set(aggregate.asset, aggregate);
   }
   async lastKnownAggregate(asset: AssetId): Promise<AggregatePrice | null> {
     return this.snapshots.get(asset) ?? null;
@@ -309,6 +316,25 @@ describe('Orchestrator', () => {
       h.orchestrator.stop();
       vi.useRealTimers();
     }
+  });
+
+  it('should persist each published aggregate via recordAggregate', async () => {
+    feedHealthy(h.orchestrator, 'btc', config.sources, 50_000, 1_000_000);
+
+    await h.orchestrator.pulse(1_000_000);
+
+    const snapshot = h.orchestrator.getSnapshot('btc');
+    expect(snapshot).not.toBeNull();
+    expect(h.audit.recorded).toContainEqual(snapshot);
+  });
+
+  it('should not throw when recordAggregate rejects and should log a warn', async () => {
+    h.audit.rejectRecord = new Error('mongo down');
+    feedHealthy(h.orchestrator, 'btc', config.sources, 50_000, 1_000_000);
+
+    await expect(h.orchestrator.pulse(1_000_000)).resolves.toBeUndefined();
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    expect(h.logger.warn).toHaveBeenCalled();
   });
 
   it('should subscribe on start and unsubscribe on stop', async () => {

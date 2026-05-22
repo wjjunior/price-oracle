@@ -211,6 +211,7 @@ export class Orchestrator {
       };
       runtime.lastAggregate = aggregatePrice;
       await this.publishAggregate(aggregatePrice, correlationId);
+      void this.recordSnapshot(aggregatePrice, correlationId);
       this.emit({
         type: 'aggregate',
         asset,
@@ -372,6 +373,25 @@ export class Orchestrator {
           error: errorMessage(err),
         },
         'Aggregate publish failed',
+      );
+    }
+  }
+
+  private async recordSnapshot(
+    aggregatePrice: AggregatePrice,
+    correlationId: CorrelationId,
+  ): Promise<void> {
+    try {
+      await this.deps.audit.recordAggregate(aggregatePrice);
+    } catch (err) {
+      this.deps.logger.warn(
+        {
+          event: 'orchestrator.record-aggregate-failed',
+          asset: aggregatePrice.asset,
+          correlationId,
+          error: errorMessage(err),
+        },
+        'Aggregate snapshot record failed',
       );
     }
   }
