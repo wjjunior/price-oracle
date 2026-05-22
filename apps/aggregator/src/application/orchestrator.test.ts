@@ -201,6 +201,33 @@ describe('Orchestrator', () => {
     expect(healthEvents.length).toBeGreaterThan(0);
   });
 
+  it('should stream per-source freshness on every pulse without a transition so HEALTHY sources never read as stale', async () => {
+    feedHealthy(h.orchestrator, 'btc', config.sources, 50_000, 1_000_000);
+    await h.orchestrator.pulse(1_000_000);
+
+    const eventsBefore = h.events.length;
+    const auditBefore = h.audit.appended.length;
+
+    await h.orchestrator.pulse(1_000_200);
+
+    const freshness = h.events
+      .slice(eventsBefore)
+      .filter(
+        (e): e is Extract<SseEnvelope, { type: 'source-health' }> =>
+          e.type === 'source-health' && e.asset === 'btc',
+      );
+    expect(freshness.map((e) => e.data.source).sort((a, b) => a.localeCompare(b))).toEqual(
+      [...config.sources].sort((a, b) => a.localeCompare(b)),
+    );
+    expect(freshness.every((e) => e.data.health === 'HEALTHY')).toBe(true);
+    expect(freshness.every((e) => e.data.lastTickAt === 1_000_000)).toBe(true);
+
+    const newSourceAudits = h.audit.appended
+      .slice(auditBefore)
+      .filter((e) => e.type === 'SourceStateChanged');
+    expect(newSourceAudits).toHaveLength(0);
+  });
+
   it('should open the breaker after tripStreak below-floor pulses and emit a BreakerStateChanged audit + breaker-state SSE', async () => {
     for (let i = 0; i < config.breaker.tripStreak; i += 1) {
       await h.orchestrator.pulse(1_000_000 + i);

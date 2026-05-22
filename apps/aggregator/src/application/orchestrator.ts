@@ -199,6 +199,8 @@ export class Orchestrator {
       this.applySourceUpdate(asset, source, null, now, correlationId);
     }
 
+    this.emitSourceFreshness(asset, runtime, correlationId);
+
     const states = [...runtime.sources.values()];
     const result = aggregate(states, now, this.config.thresholds);
     const confidence = result?.confidence ?? 0;
@@ -346,6 +348,16 @@ export class Orchestrator {
     this.emit({ type: 'audit', data: event, correlationId });
     this.emit({ type: 'source-health', asset, data: next, correlationId });
     void this.appendAudit(event, correlationId);
+  }
+
+  private emitSourceFreshness(
+    asset: AssetId,
+    runtime: AssetRuntime,
+    correlationId: CorrelationId,
+  ): void {
+    for (const state of runtime.sources.values()) {
+      this.emit({ type: 'source-health', asset, data: state, correlationId });
+    }
   }
 
   private async appendAudit(event: AuditEvent, correlationId: CorrelationId): Promise<void> {
