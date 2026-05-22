@@ -104,6 +104,15 @@ describe('BinanceService.handleMessage', () => {
     expect(first.correlationId).toMatch(/^[0-9a-f-]{36}$/);
   });
 
+  it('should publish a mapped tick for an ETH trade frame', () => {
+    svc.handleMessage(Buffer.from(JSON.stringify(readFixture('trade-eth.json'))));
+    expect(captured).toHaveLength(1);
+    const first = captured[0]!;
+    expect(first.subject).toBe(ticksSubject('eth', 'binance'));
+    const tick = TickSchema.parse(first.payload);
+    expect(tick).toMatchObject({ asset: 'eth', source: 'binance', price: 3500.25 });
+  });
+
   it('should warn ws.frame.unknown_symbol and not publish for an unknown symbol', () => {
     const trade = readFixture('trade.json') as { data: Record<string, unknown> };
     trade.data.s = 'XRPUSDT';

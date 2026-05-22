@@ -119,6 +119,7 @@ describe('CoinbaseService.handleMessage', () => {
     expect(first.subject).toBe(ticksSubject('btc', 'coinbase'));
     const tick = TickSchema.parse(first.payload);
     expect(tick).toMatchObject({ asset: 'btc', source: 'coinbase', price: 95000.5 });
+    expect(tick.sourceTimestamp).toBe(new Date('2026-05-21T18:59:59.987654Z').getTime());
     expect(first.correlationId).toMatch(/^[0-9a-f-]{36}$/);
   });
 
