@@ -20,6 +20,7 @@ const ENV_KEYS = [
   'NATS_URL',
   'MONGO_URL',
   'MOCK_HTTP_PORT',
+  'MOCK_ADMIN_ENABLED',
   'AGGREGATOR_HTTP_PORT',
   'CORS_ORIGIN',
   'MOCK_TICK_INTERVAL_MS',
@@ -51,6 +52,7 @@ export async function startStack(env: { natsUrl: string; mongoUrl: string }): Pr
   process.env.NATS_URL = env.natsUrl;
   process.env.MONGO_URL = withDatabase(env.mongoUrl, MONGO_DB_NAME);
   process.env.MOCK_HTTP_PORT = String(MOCK_HTTP_PORT);
+  process.env.MOCK_ADMIN_ENABLED = 'true';
   process.env.AGGREGATOR_HTTP_PORT = String(AGGREGATOR_HTTP_PORT);
   process.env.CORS_ORIGIN = 'http://localhost:5173';
   process.env.MOCK_TICK_INTERVAL_MS = '100';
