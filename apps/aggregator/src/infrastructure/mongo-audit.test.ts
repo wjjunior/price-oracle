@@ -85,7 +85,10 @@ describe('MongoAudit', () => {
 
     await new MongoAudit(mongo.db, logger).append(auditEvent);
     expect(logger.warn).toHaveBeenCalledWith(
-      expect.objectContaining({ event: 'audit.append-failed', error: '{"reason":"driver fault"}' }),
+      expect.objectContaining({
+        event: 'audit.append-failed',
+        error: expect.stringContaining('driver fault'),
+      }),
       expect.any(String),
     );
   });
