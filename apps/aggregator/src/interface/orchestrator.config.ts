@@ -12,17 +12,21 @@ const splitCsv = (value: string): string[] =>
     .map((part) => part.trim())
     .filter((part) => part.length > 0);
 
+const noDuplicates = <T>(values: readonly T[]): boolean => new Set(values).size === values.length;
+
+const DUPLICATE_ENTRY_MESSAGE = 'duplicate entries are not allowed';
+
 const assetsSchema = z
   .string()
   .default(DEFAULT_ASSETS)
   .transform(splitCsv)
-  .pipe(z.array(AssetId).min(1));
+  .pipe(z.array(AssetId).min(1).refine(noDuplicates, DUPLICATE_ENTRY_MESSAGE));
 
 const sourcesSchema = z
   .string()
   .default(DEFAULT_SOURCES)
   .transform(splitCsv)
-  .pipe(z.array(SourceId).min(1));
+  .pipe(z.array(SourceId).min(1).refine(noDuplicates, DUPLICATE_ENTRY_MESSAGE));
 
 const OrchestratorEnvSchema = z.object({
   AGGREGATOR_ASSETS: assetsSchema,

@@ -17,6 +17,7 @@ const ENV_KEYS = [
   'AGGREGATOR_HTTP_PORT',
   'CORS_ORIGIN',
   'MOCK_TICK_INTERVAL_MS',
+  'AGGREGATOR_ASSETS',
   'AGGREGATOR_SOURCES',
   'AGGREGATION_INTERVAL_MS',
   'FRESHNESS_DECAY_MS',
@@ -47,6 +48,7 @@ export async function startStack(env: { natsUrl: string; mongoUrl: string }): Pr
   process.env.AGGREGATOR_HTTP_PORT = String(AGGREGATOR_HTTP_PORT);
   process.env.CORS_ORIGIN = 'http://localhost:5173';
   process.env.MOCK_TICK_INTERVAL_MS = '100';
+  process.env.AGGREGATOR_ASSETS = 'btc,eth';
   process.env.AGGREGATOR_SOURCES = 'mock';
   process.env.AGGREGATION_INTERVAL_MS = '100';
   process.env.FRESHNESS_DECAY_MS = '2000';

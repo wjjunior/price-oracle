@@ -34,4 +34,12 @@ describe('buildOrchestratorConfig', () => {
   it('should reject a non-positive interval', () => {
     expect(() => buildOrchestratorConfig({ AGGREGATION_INTERVAL_MS: '0' })).toThrow();
   });
+
+  it('should reject duplicate sources', () => {
+    expect(() => buildOrchestratorConfig({ AGGREGATOR_SOURCES: 'mock,mock' })).toThrow();
+  });
+
+  it('should reject duplicate assets', () => {
+    expect(() => buildOrchestratorConfig({ AGGREGATOR_ASSETS: 'btc,btc' })).toThrow();
+  });
 });
