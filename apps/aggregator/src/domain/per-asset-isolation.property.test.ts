@@ -38,8 +38,10 @@ describe('per-asset isolation', () => {
         arbSourceState,
         fc.array(opArb, { maxLength: 40 }),
         (cfg, btcInitRaw, ethInitRaw, ops) => {
-          const btcInit: SourceState = { ...btcInitRaw, asset: 'btc' };
-          const ethInit: SourceState = { ...ethInitRaw, asset: 'eth' };
+          // Pin both slices to the same source the ticks carry: a leak keyed by
+          // source alone would then collide across assets and break the property.
+          const btcInit: SourceState = { ...btcInitRaw, asset: 'btc', source: 'binance' };
+          const ethInit: SourceState = { ...ethInitRaw, asset: 'eth', source: 'binance' };
 
           const isolatedBtc = fold(btcInit, ops.filter((o) => o.asset === 'btc'), cfg);
           const isolatedEth = fold(ethInit, ops.filter((o) => o.asset === 'eth'), cfg);
@@ -58,10 +60,10 @@ describe('per-asset isolation', () => {
     );
   });
 
-  it('should not mutate either input slice during interleaved updates', () => {
+  it('should not mutate the input slice while applying its updates', () => {
     fc.assert(
       fc.property(arbThresholds, arbSourceState, fc.array(opArb, { maxLength: 20 }), (cfg, initRaw, ops) => {
-        const init: SourceState = { ...initRaw, asset: 'btc' };
+        const init: SourceState = { ...initRaw, asset: 'btc', source: 'binance' };
         const snapshot = { ...init };
         let state = init;
         for (const op of ops) {
