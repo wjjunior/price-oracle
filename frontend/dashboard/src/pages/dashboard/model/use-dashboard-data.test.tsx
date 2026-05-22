@@ -1,4 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
+import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useDashboardData } from './use-dashboard-data.js';
@@ -109,5 +110,34 @@ describe('useDashboardData', () => {
     const client = MockEventSource.last;
     unmount();
     expect(client?.close).toHaveBeenCalled();
+  });
+
+  it('should not overwrite the store with a snapshot that resolves after unmount', async () => {
+    let resolveBtc: (response: Response) => void = () => {};
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input);
+      if (url.includes('/api/snapshot?asset=btc')) {
+        return new Promise<Response>((resolve) => {
+          resolveBtc = resolve;
+        });
+      }
+      if (url.includes('/api/snapshot?asset=eth')) return jsonResponse(snapshot('eth', 3_000));
+      if (url.includes('/api/audit')) return jsonResponse({ events: [] });
+      return Promise.reject(new Error(`unexpected fetch ${url}`));
+    });
+
+    const { unmount } = renderHook(() => useDashboardData());
+    unmount();
+    await act(async () => {
+      resolveBtc(
+        new Response(JSON.stringify(snapshot('btc', 99_999)), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      );
+    });
+
+    expect(usePriceAggregateStore.getState().byAsset.btc).toBeNull();
+    expect(toast.error).not.toHaveBeenCalled();
   });
 });

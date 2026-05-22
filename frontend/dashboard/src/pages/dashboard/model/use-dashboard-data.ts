@@ -16,14 +16,18 @@ import { createSseClient, type SseConnectionState } from '@/shared/api/sse-clien
 const ASSETS: readonly AssetId[] = ['btc', 'eth'];
 const STREAM_URL = '/api/stream';
 
-async function hydrate(): Promise<void> {
+async function hydrate(signal: AbortSignal, isCancelled: () => boolean): Promise<void> {
   await Promise.all([
     ...ASSETS.map(async (asset) => {
-      const snapshot = await loadPriceSnapshot(asset);
+      const snapshot = await loadPriceSnapshot(asset, { signal });
+      if (isCancelled()) return;
       hydratePrice(snapshot);
       hydrateSource(snapshot);
     }),
-    loadAuditEvents().then(seedAuditEvents),
+    loadAuditEvents(undefined, { signal }).then((response) => {
+      if (isCancelled()) return;
+      seedAuditEvents(response);
+    }),
   ]);
 }
 
@@ -43,7 +47,12 @@ export function useDashboardData(): { connectionState: SseConnectionState } {
   const [connectionState, setConnectionState] = useState<SseConnectionState>('connecting');
 
   useEffect(() => {
-    hydrate().catch(() => toast.error('Failed to load the latest dashboard snapshot'));
+    const controller = new AbortController();
+    let cancelled = false;
+
+    hydrate(controller.signal, () => cancelled).catch(() => {
+      if (!cancelled) toast.error('Failed to load the latest dashboard snapshot');
+    });
 
     const client = createSseClient(STREAM_URL);
     setConnectionState(client.getState());
@@ -55,6 +64,8 @@ export function useDashboardData(): { connectionState: SseConnectionState } {
     ];
 
     return () => {
+      cancelled = true;
+      controller.abort();
       for (const unsubscribe of unsubscribes) unsubscribe();
       client.close();
     };
