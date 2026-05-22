@@ -25,7 +25,7 @@ class MockEventSource {
     MockEventSource.last = this;
   }
   emit(envelope: unknown): void {
-    this.onmessage?.({ data: JSON.stringify(envelope) } as MessageEvent<string>);
+    this.onmessage?.(new MessageEvent('message', { data: JSON.stringify(envelope) }));
   }
 }
 
