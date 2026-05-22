@@ -10,6 +10,7 @@
   "dependencies": {
     "@nats-io/nats-core": "^3.0.0",
     "@price-oracle/contracts": "workspace:*",
+    "mongodb": "^6.12.0",
     "pino": "^9.5.0"
   },
   "devDependencies": {
