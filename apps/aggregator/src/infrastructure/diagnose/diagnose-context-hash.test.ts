@@ -5,6 +5,7 @@ import { hashDiagnoseContext } from './diagnose-context-hash.js';
 
 import type { DiagnoseContext } from '../../domain/ports/diagnose.port.js';
 import type { SourceState } from '../../domain/types.js';
+import type { AuditEvent } from '@price-oracle/contracts/events';
 
 function source(over: Partial<SourceState> = {}): SourceState {
   return {
@@ -75,5 +76,33 @@ describe('hashDiagnoseContext', () => {
     expect(hashDiagnoseContext(makeContext({ recentEvents: [] }))).not.toBe(
       hashDiagnoseContext(makeContext({ recentEvents: [event] })),
     );
+  });
+
+  it('should be insensitive to event key ordering', () => {
+    const ordered = {
+      type: 'AnomalyDetected',
+      asset: 'btc',
+      source: 'binance',
+      metric: 'drift',
+      value: 5,
+      threshold: 2,
+      at: 1_000,
+    } satisfies AuditEvent;
+    const scrambled = {
+      at: 1_000,
+      threshold: 2,
+      value: 5,
+      metric: 'drift',
+      source: 'binance',
+      asset: 'btc',
+      type: 'AnomalyDetected',
+    } satisfies AuditEvent;
+    expect(hashDiagnoseContext(makeContext({ recentEvents: [ordered] }))).toBe(
+      hashDiagnoseContext(makeContext({ recentEvents: [scrambled] })),
+    );
+  });
+
+  it('should return a 16-character hex digest', () => {
+    expect(hashDiagnoseContext(makeContext())).toHaveLength(16);
   });
 });
