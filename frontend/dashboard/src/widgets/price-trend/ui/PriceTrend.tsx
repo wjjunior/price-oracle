@@ -1,5 +1,7 @@
 import { Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
+import { formatTrendTime, formatTrendValue } from '../model/format-trend.js';
+
 import type { AssetId } from '@price-oracle/contracts/primitives';
 import type { JSX } from 'react';
 
@@ -42,7 +44,11 @@ function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
                 stroke={TREND_COLOR.floor}
                 strokeDasharray="4 3"
               />
-              <Tooltip contentStyle={{ fontSize: 12 }} labelFormatter={() => ''} />
+              <Tooltip
+                contentStyle={{ fontSize: 12 }}
+                formatter={formatTrendValue}
+                labelFormatter={formatTrendTime}
+              />
               <Line
                 yAxisId="price"
                 type="monotone"
