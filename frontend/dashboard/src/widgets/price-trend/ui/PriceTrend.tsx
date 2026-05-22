@@ -9,30 +9,23 @@ import {
   YAxis,
 } from 'recharts';
 
+import { priceDomain, priceFloor } from '../model/chart-domain.js';
 import { formatTrendAxisPrice, formatTrendTime, formatTrendValue } from '../model/format-trend.js';
 
 import type { AssetId } from '@price-oracle/contracts/primitives';
 import type { JSX } from 'react';
 
-import { usePriceHistory, type TrendPoint } from '@/entities/price-aggregate';
+import { usePriceHistory } from '@/entities/price-aggregate';
 import { Card } from '@/shared/ui/card';
 
 const ASSETS: readonly AssetId[] = ['btc', 'eth'];
 
-const FLOOR_VISUAL_FRACTION = 0.05;
-
 const COLOR = {
   band: 'var(--brand)',
-  price: 'var(--muted-foreground)',
+  price: 'var(--foreground)',
   floor: 'var(--degraded)',
   axis: 'var(--chart-tick)',
 } as const;
-
-function priceFloor(points: readonly TrendPoint[]): number {
-  if (points.length === 0) return 0;
-  const min = Math.min(...points.map((p) => p.price));
-  return min * FLOOR_VISUAL_FRACTION;
-}
 
 function ChartLegend(): JSX.Element {
   return (
@@ -58,6 +51,7 @@ function ChartLegend(): JSX.Element {
 
 function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
   const points = usePriceHistory(asset);
+  const domain = priceDomain(points);
   const floor = priceFloor(points);
 
   return (
@@ -69,7 +63,7 @@ function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
         <ChartLegend />
       </div>
       <div className="h-44">
-        {points.length === 0 ? (
+        {points.length === 0 || domain === undefined ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             Waiting for data…
           </div>
@@ -86,19 +80,21 @@ function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
               />
               <YAxis
                 orientation="right"
-                domain={[0, 'auto']}
+                domain={domain}
                 tickFormatter={formatTrendAxisPrice}
                 tick={{ fontSize: 10, fill: COLOR.axis }}
                 axisLine={false}
                 tickLine={false}
                 width={56}
               />
-              <ReferenceLine
-                y={floor}
-                stroke={COLOR.floor}
-                strokeDasharray="4 3"
-                strokeWidth={1.5}
-              />
+              {floor !== undefined ? (
+                <ReferenceLine
+                  y={floor}
+                  stroke={COLOR.floor}
+                  strokeDasharray="4 3"
+                  strokeWidth={1.5}
+                />
+              ) : null}
               <Tooltip
                 contentStyle={{ fontSize: 12 }}
                 formatter={formatTrendValue}
@@ -110,14 +106,15 @@ function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
                 stroke="none"
                 fill={COLOR.band}
                 fillOpacity={0.18}
+                baseValue={domain[0]}
                 isAnimationActive={false}
               />
               <Line
                 type="monotone"
                 dataKey="price"
                 stroke={COLOR.price}
-                strokeOpacity={0.7}
-                strokeWidth={1.5}
+                strokeOpacity={0.85}
+                strokeWidth={1.75}
                 dot={false}
                 isAnimationActive={false}
               />
