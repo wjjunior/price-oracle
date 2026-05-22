@@ -17,19 +17,23 @@ export function SourceRow({
   readonly now: Millis;
 }): JSX.Element {
   return (
-    <div data-slot="source-row" className="flex items-center gap-3">
-      <span data-slot="source-name" className="font-medium">
-        {state.source}
-      </span>
-      <Badge data-slot="source-health" className={HEALTH_TONE[state.health]}>
-        {state.health}
-      </Badge>
-      <span data-slot="source-latency" className="text-muted-foreground tabular-nums">
-        {formatSourceLatency(state.lastTickAt, now)}
-      </span>
-      <span data-slot="source-price" className="tabular-nums">
-        {state.lastPrice === null ? '—' : formatCurrency(state.lastPrice)}
-      </span>
+    <div data-slot="source-row" className="flex flex-col gap-0.5">
+      <div className="flex items-center justify-between gap-2">
+        <span data-slot="source-name" className="truncate font-medium">
+          {state.source}
+        </span>
+        <Badge data-slot="source-health" className={HEALTH_TONE[state.health]}>
+          {state.health}
+        </Badge>
+      </div>
+      <div className="flex items-center justify-between gap-2 whitespace-nowrap text-xs text-muted-foreground">
+        <span data-slot="source-latency" className="tabular-nums">
+          {formatSourceLatency(state.lastTickAt, now)}
+        </span>
+        <span data-slot="source-price" className="tabular-nums text-foreground">
+          {state.lastPrice === null ? '—' : formatCurrency(state.lastPrice)}
+        </span>
+      </div>
     </div>
   );
 }

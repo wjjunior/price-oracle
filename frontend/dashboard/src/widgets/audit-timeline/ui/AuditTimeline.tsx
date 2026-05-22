@@ -35,10 +35,14 @@ export function AuditTimeline({ now }: { readonly now: Millis }): JSX.Element {
           </Button>
         ))}
       </div>
-      <div className="flex flex-col gap-1">
-        {visible.map((event) => (
-          <AuditRow key={auditEventKey(event)} event={event} now={now} />
-        ))}
+      <div data-slot="audit-list" className="flex max-h-80 flex-col gap-1 overflow-y-auto pr-1">
+        {visible.length === 0 ? (
+          <span className="text-sm text-muted-foreground">No events yet.</span>
+        ) : (
+          visible.map((event) => (
+            <AuditRow key={auditEventKey(event)} event={event} now={now} />
+          ))
+        )}
       </div>
     </Card>
   );

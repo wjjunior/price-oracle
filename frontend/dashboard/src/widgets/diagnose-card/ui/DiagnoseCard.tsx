@@ -35,7 +35,10 @@ export function DiagnoseCard(props: DiagnoseCardProps): JSX.Element {
         </div>
       ) : null}
       {props.state === 'answered' ? (
-        <div data-slot="diagnose-markdown" className="text-sm [&_h2]:mb-1 [&_h2]:font-semibold">
+        <div
+          data-slot="diagnose-markdown"
+          className="max-h-64 overflow-y-auto pr-1 text-sm [&_h2]:mb-1 [&_h2]:font-semibold"
+        >
           <Suspense fallback={<Skeleton className="h-4 w-full" />}>
             <Markdown>{props.markdown}</Markdown>
           </Suspense>

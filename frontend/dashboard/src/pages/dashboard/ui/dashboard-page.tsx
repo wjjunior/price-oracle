@@ -1,8 +1,9 @@
+import { lazy, Suspense, type JSX } from 'react';
+
 import { useDashboardData } from '../model/use-dashboard-data.js';
 
 import { DiagnosePanel } from './DiagnosePanel.js';
 
-import type { JSX } from 'react';
 
 import { InjectFailureDialog, useInjectFailure } from '@/features/inject-failure';
 import { useNow } from '@/shared/lib/use-now';
@@ -10,6 +11,10 @@ import { AuditTimeline } from '@/widgets/audit-timeline';
 import { ChaosControls } from '@/widgets/chaos-controls';
 import { PriceOverview } from '@/widgets/price-overview';
 import { SourceHealth } from '@/widgets/source-health';
+
+const PriceTrend = lazy(() =>
+  import('@/widgets/price-trend').then((module) => ({ default: module.PriceTrend })),
+);
 
 export function DashboardPage(): JSX.Element {
   const { connectionState } = useDashboardData();
@@ -36,6 +41,11 @@ export function DashboardPage(): JSX.Element {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-3">
             <PriceOverview />
+          </div>
+          <div className="lg:col-span-3">
+            <Suspense fallback={<div className="h-40" />}>
+              <PriceTrend />
+            </Suspense>
           </div>
           <div className="lg:col-span-2">
             <SourceHealth now={now} />
