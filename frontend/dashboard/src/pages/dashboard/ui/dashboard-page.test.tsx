@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DashboardPage } from './dashboard-page.js';
@@ -9,12 +9,15 @@ import type { JSX, ReactNode } from 'react';
 
 class MockEventSource {
   static readonly CLOSED = 2;
+  static last: MockEventSource | null = null;
   onopen: (() => void) | null = null;
   onerror: (() => void) | null = null;
   onmessage: ((event: MessageEvent<string>) => void) | null = null;
   readyState = 0;
   readonly close = vi.fn();
-  constructor(readonly url: string) {}
+  constructor(readonly url: string) {
+    MockEventSource.last = this;
+  }
 }
 
 const WIDGET_SLOTS = ['price-overview', 'source-health', 'audit-timeline', 'diagnose-panel', 'chaos-controls'] as const;
@@ -28,6 +31,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  MockEventSource.last = null;
 });
 
 function renderPage(): RenderResult {
@@ -49,5 +53,17 @@ describe('DashboardPage', () => {
     for (const slot of WIDGET_SLOTS) {
       expect(container.querySelector(`[data-slot="${slot}"]`)).not.toBeNull();
     }
+  });
+
+  it('should not show the reconnect indicator while connected', () => {
+    const { container } = renderPage();
+    expect(container.querySelector('[data-slot="sse-status"]')).toBeNull();
+  });
+
+  it('should show the reconnect indicator when the stream is reconnecting', async () => {
+    renderPage();
+    await waitFor(() => expect(MockEventSource.last).not.toBeNull());
+    act(() => MockEventSource.last?.onerror?.());
+    expect(await screen.findByText('Reconnecting…')).toBeInTheDocument();
   });
 });
