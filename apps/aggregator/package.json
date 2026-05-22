@@ -8,11 +8,14 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.97.1",
     "@nats-io/nats-core": "^3.0.0",
     "@price-oracle/contracts": "workspace:*",
-    "pino": "^9.5.0"
+    "pino": "^9.5.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/node": "^22.19.19",
     "fast-check": "^4.1.1",
     "vitest": "^4.1.6"
   }
