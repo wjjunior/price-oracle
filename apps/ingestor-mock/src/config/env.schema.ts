@@ -6,7 +6,7 @@ export const DEFAULT_TICK_INTERVAL_MS = 250;
 export const DEFAULT_BTC_ANCHOR_USD = 95_000;
 export const DEFAULT_ETH_ANCHOR_USD = 3_500;
 export const DEFAULT_PRICE_VOLATILITY_PCT = 0.001;
-export const DEFAULT_ADMIN_ENABLED = true;
+export const DEFAULT_ADMIN_ENABLED = false;
 
 const NatsUrl = z.url({ error: 'must be a full URL with scheme', protocol: /^nats$/i });
 

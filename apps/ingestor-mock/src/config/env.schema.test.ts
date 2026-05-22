@@ -40,8 +40,8 @@ describe('loadIngestorConfig', () => {
     expect(() => loadIngestorConfig({ NATS_URL: '' })).toThrow();
   });
 
-  it('should enable the admin API by default', () => {
-    expect(loadIngestorConfig({}).adminEnabled).toBe(true);
+  it('should disable the admin API by default', () => {
+    expect(loadIngestorConfig({}).adminEnabled).toBe(false);
   });
 
   it('should disable the admin API for falsey flag values', () => {
