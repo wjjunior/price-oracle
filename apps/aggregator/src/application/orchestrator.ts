@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
+import { inspect } from 'node:util';
 
 import {
   buildAnomalyDetectedEvent,
@@ -39,6 +40,9 @@ const SSE_EVENT = 'sse';
 const DRIFT_METRIC = 'price-drift';
 const INITIAL_HEALTH = 'STALE';
 
+const errorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : inspect(error);
+
 export type OrchestratorConfig = {
   readonly assets: readonly AssetId[];
   readonly sources: readonly SourceId[];
@@ -71,12 +75,14 @@ export class Orchestrator {
   private readonly emitter = new EventEmitter();
   private timer: ReturnType<typeof setInterval> | null = null;
   private unsubscribe: Unsubscribe | null = null;
+  private pulseInFlight = false;
 
   constructor(
     private readonly config: OrchestratorConfig,
     private readonly deps: OrchestratorDeps,
   ) {
     this.now = deps.now ?? ((): Millis => Date.now());
+    this.emitter.setMaxListeners(0);
     this.runtime = new Map();
     for (const asset of config.assets) {
       const sources = new Map<SourceId, SourceState>();
@@ -112,9 +118,22 @@ export class Orchestrator {
       this.routeTick(tick, correlationId);
     });
     this.timer = setInterval(() => {
-      void this.pulse(this.now());
+      void this.runScheduledPulse();
     }, this.config.aggregationIntervalMs);
     this.deps.logger.info({ event: 'orchestrator.start' }, 'Orchestrator started');
+  }
+
+  private async runScheduledPulse(): Promise<void> {
+    if (this.pulseInFlight) {
+      this.deps.logger.warn({ event: 'orchestrator.pulse-overlap' }, 'Skipping overlapping pulse');
+      return;
+    }
+    this.pulseInFlight = true;
+    try {
+      await this.pulse(this.now());
+    } finally {
+      this.pulseInFlight = false;
+    }
   }
 
   stop(): void {
@@ -138,7 +157,7 @@ export class Orchestrator {
       );
       return;
     }
-    void this.applySourceUpdate(tick.asset, tick.source, tick, this.now(), correlationId);
+    this.applySourceUpdate(tick.asset, tick.source, tick, this.now(), correlationId);
   }
 
   async pulse(now: Millis): Promise<void> {
@@ -164,7 +183,7 @@ export class Orchestrator {
     const correlationId: CorrelationId = randomUUID();
 
     for (const source of this.config.sources) {
-      await this.applySourceUpdate(asset, source, null, now, correlationId);
+      this.applySourceUpdate(asset, source, null, now, correlationId);
     }
 
     const states = [...runtime.sources.values()];
@@ -284,13 +303,13 @@ export class Orchestrator {
     }
   }
 
-  private async applySourceUpdate(
+  private applySourceUpdate(
     asset: AssetId,
     source: SourceId,
     tick: Tick | null,
     now: Millis,
     correlationId: CorrelationId,
-  ): Promise<void> {
+  ): void {
     const runtime = this.runtime.get(asset);
     if (!runtime) return;
     const prev = runtime.sources.get(source);
@@ -307,9 +326,9 @@ export class Orchestrator {
       to: next.health,
       at: now,
     });
-    await this.appendAudit(event, correlationId);
     this.emit({ type: 'audit', data: event, correlationId });
     this.emit({ type: 'source-health', asset, data: next, correlationId });
+    void this.appendAudit(event, correlationId);
   }
 
   private async appendAudit(event: AuditEvent, correlationId: CorrelationId): Promise<void> {
@@ -322,7 +341,7 @@ export class Orchestrator {
           auditType: event.type,
           asset: event.asset,
           correlationId,
-          error: err instanceof Error ? err.message : String(err),
+          error: errorMessage(err),
         },
         'Audit append failed',
       );
@@ -341,7 +360,7 @@ export class Orchestrator {
           event: 'orchestrator.publish-failed',
           asset: aggregatePrice.asset,
           correlationId,
-          error: err instanceof Error ? err.message : String(err),
+          error: errorMessage(err),
         },
         'Aggregate publish failed',
       );
@@ -349,6 +368,13 @@ export class Orchestrator {
   }
 
   private emit(envelope: SseEnvelope): void {
-    this.emitter.emit(SSE_EVENT, envelope);
+    try {
+      this.emitter.emit(SSE_EVENT, envelope);
+    } catch (err) {
+      this.deps.logger.warn(
+        { event: 'orchestrator.listener-failed', error: errorMessage(err) },
+        'SSE listener threw',
+      );
+    }
   }
 }

@@ -338,4 +338,18 @@ describe('Orchestrator', () => {
     }
     expect(h.logger.warn).toHaveBeenCalled();
   });
+
+  it('should contain a throwing SSE listener and keep the pulse resilient', async () => {
+    h.orchestrator.onEvent(() => {
+      throw new Error('listener boom');
+    });
+    feedHealthy(h.orchestrator, 'btc', config.sources, 50_000, 1_000_000);
+
+    await expect(h.orchestrator.pulse(1_000_000)).resolves.toBeUndefined();
+    expect(h.logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'orchestrator.listener-failed' }),
+      expect.any(String),
+    );
+    expect(h.publisher.calls.some((c) => c.aggregate.asset === 'btc')).toBe(true);
+  });
 });
