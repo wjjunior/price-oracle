@@ -39,4 +39,18 @@ describe('loadIngestorConfig', () => {
   it('should reject an empty NATS_URL string', () => {
     expect(() => loadIngestorConfig({ NATS_URL: '' })).toThrow();
   });
+
+  it('should enable the admin API by default', () => {
+    expect(loadIngestorConfig({}).adminEnabled).toBe(true);
+  });
+
+  it('should disable the admin API for falsey flag values', () => {
+    expect(loadIngestorConfig({ MOCK_ADMIN_ENABLED: 'false' }).adminEnabled).toBe(false);
+    expect(loadIngestorConfig({ MOCK_ADMIN_ENABLED: '0' }).adminEnabled).toBe(false);
+  });
+
+  it('should enable the admin API for truthy flag values', () => {
+    expect(loadIngestorConfig({ MOCK_ADMIN_ENABLED: 'true' }).adminEnabled).toBe(true);
+    expect(loadIngestorConfig({ MOCK_ADMIN_ENABLED: '1' }).adminEnabled).toBe(true);
+  });
 });

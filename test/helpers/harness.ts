@@ -124,7 +124,12 @@ export async function startStack(env: { natsUrl: string; mongoUrl: string }): Pr
     const { NestFactory } = await import('@nestjs/core');
 
     const mockModule = await import('../../apps/ingestor-mock/src/app.module.js');
-    mockApp = await NestFactory.create(mockModule.AppModule, { logger: false });
+    const { loadIngestorConfig } = await import(
+      '../../apps/ingestor-mock/src/config/env.schema.js'
+    );
+    mockApp = await NestFactory.create(mockModule.AppModule.register(loadIngestorConfig()), {
+      logger: false,
+    });
     await mockApp.listen(MOCK_HTTP_PORT);
 
     await bootAggregator();
