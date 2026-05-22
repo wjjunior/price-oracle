@@ -18,10 +18,14 @@
     "test": "pnpm -r --if-present test",
     "test:integration": "pnpm -r --if-present test:integration",
     "dev:infra": "docker compose -f infra/docker-compose.yml up -d --wait",
-    "dev:infra:reset": "docker compose -f infra/docker-compose.yml down -v --remove-orphans"
+    "dev:infra:reset": "docker compose -f infra/docker-compose.yml down -v --remove-orphans",
+    "dev:core": "concurrently --kill-others-on-fail --names mock,agg,web -c yellow,cyan,green 'pnpm --filter @price-oracle/ingestor-mock dev' 'pnpm --filter @price-oracle/aggregator dev' 'pnpm --filter @price-oracle/dashboard dev'",
+    "dev:full": "concurrently --kill-others-on-fail --names mock,binance,coinbase,agg,web -c yellow,blue,magenta,cyan,green 'pnpm --filter @price-oracle/ingestor-mock dev' 'pnpm --filter @price-oracle/ingestor-binance dev' 'pnpm --filter @price-oracle/ingestor-coinbase dev' 'AGGREGATOR_SOURCES=binance,coinbase,mock pnpm --filter @price-oracle/aggregator dev' 'pnpm --filter @price-oracle/dashboard dev'",
+    "dev:real": "concurrently --kill-others-on-fail --names binance,coinbase,agg,web -c blue,magenta,cyan,green 'pnpm --filter @price-oracle/ingestor-binance dev' 'pnpm --filter @price-oracle/ingestor-coinbase dev' 'AGGREGATOR_SOURCES=binance,coinbase pnpm --filter @price-oracle/aggregator dev' 'pnpm --filter @price-oracle/dashboard dev'"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^4.0.0",

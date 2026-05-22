@@ -3,8 +3,8 @@ import { z } from 'zod';
 export const DEFAULT_NATS_URL = 'nats://localhost:4222';
 export const DEFAULT_HTTP_PORT = 7401;
 export const DEFAULT_TICK_INTERVAL_MS = 250;
-export const DEFAULT_BTC_ANCHOR_USD = 95_000;
-export const DEFAULT_ETH_ANCHOR_USD = 3_500;
+export const DEFAULT_BTC_ANCHOR_USD = 76_000;
+export const DEFAULT_ETH_ANCHOR_USD = 2_070;
 export const DEFAULT_PRICE_VOLATILITY_PCT = 0.001;
 export const DEFAULT_ADMIN_ENABLED = false;
 
