@@ -33,7 +33,7 @@ export function ChaosControls({
         </Button>
       </div>
       {ASSETS.map((asset) => (
-        <div key={asset} data-slot="chaos-asset" data-asset={asset} className="flex items-center gap-2">
+        <div key={asset} data-slot="chaos-asset" data-asset={asset} className="flex flex-wrap items-center gap-2">
           <span className="w-8 text-xs font-medium uppercase text-muted-foreground">{asset}</span>
           {CHAOS_SCENARIOS.map((scenario) => (
             <Button
