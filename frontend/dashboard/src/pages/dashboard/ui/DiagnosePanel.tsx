@@ -18,6 +18,8 @@ export function DiagnosePanel(): JSX.Element {
     reset();
   };
 
+  const loading = view.state === 'loading';
+
   return (
     <div data-slot="diagnose-panel" className="flex flex-col gap-3">
       <div data-slot="diagnose-asset" className="flex gap-1">
@@ -27,6 +29,7 @@ export function DiagnosePanel(): JSX.Element {
             size="sm"
             variant={option === asset ? 'default' : 'outline'}
             aria-pressed={option === asset}
+            disabled={loading}
             onClick={() => selectAsset(option)}
           >
             {option.toUpperCase()}

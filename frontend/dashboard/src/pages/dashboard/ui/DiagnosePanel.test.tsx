@@ -71,6 +71,20 @@ describe('DiagnosePanel', () => {
     resolveFetch(okResponse('# Ok'));
   });
 
+  it('should disable the asset toggle while a diagnosis is loading', async () => {
+    let resolveFetch: (value: Response) => void = () => {};
+    vi.spyOn(globalThis, 'fetch').mockReturnValue(
+      new Promise<Response>((resolve) => {
+        resolveFetch = resolve;
+      }),
+    );
+    renderPanel();
+    fireEvent.click(screen.getByRole('button', { name: 'Diagnose' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'BTC' })).toBeDisabled());
+    expect(screen.getByRole('button', { name: 'ETH' })).toBeDisabled();
+    resolveFetch(okResponse('# Ok'));
+  });
+
   it('should render the markdown response in the card', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(okResponse('## Diagnosis\n\nLooks healthy.'));
     renderPanel();

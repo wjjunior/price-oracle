@@ -1,5 +1,6 @@
 import { PostDiagnoseResponseSchema, type PostDiagnoseRequest } from '@price-oracle/contracts/rest';
 import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 
@@ -30,7 +31,8 @@ function diagnose(asset: AssetId): Promise<string> {
 }
 
 export function useRequestDiagnose(): UseRequestDiagnose {
-  const mutation = useMutation({ mutationFn: diagnose });
+  const [answer, setAnswer] = useState<string | null>(null);
+  const mutation = useMutation({ mutationFn: diagnose, onSuccess: setAnswer });
 
   const request = (asset: AssetId): void => {
     mutation.mutate(asset, {
@@ -46,14 +48,19 @@ export function useRequestDiagnose(): UseRequestDiagnose {
     });
   };
 
+  const reset = (): void => {
+    setAnswer(null);
+    mutation.reset();
+  };
+
   let view: DiagnoseView;
   if (mutation.isPending) {
     view = { state: 'loading' };
-  } else if (mutation.isSuccess) {
-    view = { state: 'answered', markdown: mutation.data };
+  } else if (answer !== null) {
+    view = { state: 'answered', markdown: answer };
   } else {
     view = { state: 'empty' };
   }
 
-  return { view, request, reset: () => mutation.reset() };
+  return { view, request, reset };
 }

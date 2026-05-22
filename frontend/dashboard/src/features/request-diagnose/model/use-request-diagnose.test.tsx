@@ -80,6 +80,22 @@ describe('useRequestDiagnose', () => {
     await waitFor(() => expect(result.current.view.state).toBe('empty'));
   });
 
+  it('should keep the prior answer when a later request is rate-limited', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    fetchMock.mockResolvedValueOnce(okResponse('# First answer'));
+    const { result } = renderHook(() => useRequestDiagnose(), { wrapper });
+    act(() => result.current.request('btc'));
+    await waitFor(() =>
+      expect(result.current.view).toEqual({ state: 'answered', markdown: '# First answer' }),
+    );
+    fetchMock.mockResolvedValueOnce(new Response('{"error":"rate"}', { status: 429 }));
+    act(() => result.current.request('btc'));
+    await waitFor(() => expect(toast).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(result.current.view).toEqual({ state: 'answered', markdown: '# First answer' }),
+    );
+  });
+
   it('should clear back to empty on reset', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(okResponse('# Ok'));
     const { result } = renderHook(() => useRequestDiagnose(), { wrapper });
