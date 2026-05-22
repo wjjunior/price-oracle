@@ -1,3 +1,5 @@
+import { inspect } from 'node:util';
+
 import { AggregatePriceSchema, AuditEventSchema } from '@price-oracle/contracts/events';
 import { MongoServerError } from 'mongodb';
 
@@ -14,7 +16,7 @@ const AUDIT_INDEX_NAME = 'uniq_type_asset_source_at';
 const DUPLICATE_KEY_CODE = 11_000;
 
 const errorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error);
+  error instanceof Error ? error.message : inspect(error);
 
 export class MongoAudit implements AuditPort {
   private readonly auditEvents: Collection<Document>;
