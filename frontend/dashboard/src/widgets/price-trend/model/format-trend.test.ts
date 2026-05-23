@@ -7,6 +7,12 @@ describe('formatTrendTime', () => {
     const at = Date.UTC(2026, 0, 1, 12, 7, 0);
     expect(formatTrendTime(at)).toMatch(/^\d{2}:\d{2}$/);
   });
+
+  it('should return a placeholder when the label is not a finite number', () => {
+    expect(formatTrendTime(undefined)).toBe('—');
+    expect(formatTrendTime('not a number')).toBe('—');
+    expect(formatTrendTime(Number.NaN)).toBe('—');
+  });
 });
 
 describe('formatTrendAxisPrice', () => {

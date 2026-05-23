@@ -4,8 +4,12 @@ const TIME_FORMAT: Intl.DateTimeFormatOptions = {
   hour12: false,
 };
 
+const UNKNOWN_TIME = '—';
+
 export function formatTrendTime(label: unknown): string {
-  return new Date(Number(label)).toLocaleTimeString('en-GB', TIME_FORMAT);
+  const ms = typeof label === 'number' ? label : Number(label);
+  if (!Number.isFinite(ms)) return UNKNOWN_TIME;
+  return new Date(ms).toLocaleTimeString('en-GB', TIME_FORMAT);
 }
 
 export function formatTrendAxisPrice(value: unknown): string {

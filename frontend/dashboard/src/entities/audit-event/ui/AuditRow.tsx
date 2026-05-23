@@ -22,7 +22,11 @@ export function AuditRow({
       data-slot="audit-row"
       className="flex items-start gap-2.5 rounded-md px-2 py-1.5 hover:bg-muted/40"
     >
-      <Icon data-slot="audit-icon" className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+      <Icon
+        data-slot="audit-icon"
+        aria-hidden
+        className="mt-0.5 size-3.5 shrink-0 text-muted-foreground"
+      />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex items-center gap-2">
           {'asset' in event ? <AssetChip asset={event.asset} /> : null}
