@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/.vite
+**/*.tsbuildinfo
+.git
+.github
+.husky
+.playwright-mcp
+.env
+.env.*
+!.env.example
+*.log
+docs

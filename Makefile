@@ -2,6 +2,7 @@
 # Quickstart from a fresh clone: `make up`
 
 COMPOSE := docker compose -f infra/docker-compose.yml
+COMPOSE_FULL := docker compose -f infra/docker-compose.yml -f infra/docker-compose.full.yml
 DASHBOARD_URL := http://localhost:5173
 AGGREGATOR_URL := http://localhost:7402
 
@@ -13,7 +14,7 @@ export
 endif
 
 .DEFAULT_GOAL := help
-.PHONY: help up up-full up-real down
+.PHONY: help up up-full up-real up-docker down
 
 help: ## Show available commands
 	@echo "Price Oracle - local run control"
@@ -49,5 +50,10 @@ up-real: node_modules ## Real feeds only (binance + coinbase, no mock; needs net
 	@echo ""
 	pnpm run dev:real
 
+up-docker: ## Build + run the full containerized stack (infra + every app); slow first build
+	$(COMPOSE_FULL) up -d --build --wait
+	@echo ""
+	@echo "Containerized stack up. Dashboard: $(DASHBOARD_URL)  |  Aggregator API: $(AGGREGATOR_URL)"
+
 down: ## Stop the local infra (NATS + MongoDB); keeps the Mongo volume
-	$(COMPOSE) down
+	$(COMPOSE_FULL) down --remove-orphans
