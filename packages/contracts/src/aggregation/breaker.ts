@@ -1,0 +1,1 @@
+export const BREAKER_CONFIDENCE_FLOOR_DEFAULT = 0.6;

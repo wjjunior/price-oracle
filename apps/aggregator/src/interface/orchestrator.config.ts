@@ -1,3 +1,4 @@
+import { BREAKER_CONFIDENCE_FLOOR_DEFAULT } from '@price-oracle/contracts/aggregation';
 import { AssetId, SourceId } from '@price-oracle/contracts/primitives';
 import { z } from 'zod';
 
@@ -36,7 +37,7 @@ const OrchestratorEnvSchema = z.object({
   DEGRADED_AFTER_MS: z.coerce.number().int().positive().default(5_000),
   STALE_AFTER_MS: z.coerce.number().int().positive().default(12_000),
   HEALTH_HYSTERESIS_STREAK: z.coerce.number().int().positive().default(3),
-  BREAKER_CONFIDENCE_FLOOR: z.coerce.number().min(0).max(1).default(0.6),
+  BREAKER_CONFIDENCE_FLOOR: z.coerce.number().min(0).max(1).default(BREAKER_CONFIDENCE_FLOOR_DEFAULT),
   BREAKER_TRIP_STREAK: z.coerce.number().int().positive().default(6),
   BREAKER_RECOVERY_WINDOW_MS: z.coerce.number().int().positive().default(30_000),
   BREAKER_HALF_OPEN_PROBE_STREAK: z.coerce.number().int().positive().default(4),
