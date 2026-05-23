@@ -10,12 +10,13 @@ import {
 } from 'recharts';
 
 import { priceDomain, priceFloor } from '../model/chart-domain.js';
-import { formatTrendAxisPrice, formatTrendTime, formatTrendValue } from '../model/format-trend.js';
+import { formatTrendAxisPrice, formatTrendTime } from '../model/format-trend.js';
 
 import type { AssetId } from '@price-oracle/contracts/primitives';
 import type { JSX } from 'react';
 
 import { usePriceHistory } from '@/entities/price-aggregate';
+import { formatCurrency } from '@/shared/lib/format';
 import { Card } from '@/shared/ui/card';
 
 const ASSETS: readonly AssetId[] = ['btc', 'eth'];
@@ -26,6 +27,26 @@ const COLOR = {
   floor: 'var(--degraded)',
   axis: 'var(--chart-tick)',
 } as const;
+
+type ChartTooltipProps = {
+  readonly active?: boolean;
+  readonly label?: number | string;
+  readonly payload?: ReadonlyArray<{ readonly value?: number; readonly dataKey?: string }>;
+};
+
+function ChartTooltip({ active, payload, label }: ChartTooltipProps): JSX.Element | null {
+  if (!active || !payload?.length) return null;
+  const priceEntry = payload.find((entry) => entry.dataKey === 'price');
+  const price = typeof priceEntry?.value === 'number' ? priceEntry.value : null;
+  return (
+    <div className="rounded-md border border-border bg-card px-2.5 py-1.5 text-xs shadow-sm">
+      <div className="text-muted-foreground">{formatTrendTime(label)}</div>
+      {price !== null ? (
+        <div className="font-mono tabular-nums text-card-foreground">{formatCurrency(price)}</div>
+      ) : null}
+    </div>
+  );
+}
 
 function ChartLegend(): JSX.Element {
   return (
@@ -95,11 +116,7 @@ function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
                   strokeWidth={1.5}
                 />
               ) : null}
-              <Tooltip
-                contentStyle={{ fontSize: 12 }}
-                formatter={formatTrendValue}
-                labelFormatter={formatTrendTime}
-              />
+              <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'var(--muted-foreground)' }} />
               <Area
                 type="monotone"
                 dataKey="price"

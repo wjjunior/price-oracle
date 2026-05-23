@@ -1,22 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatTrendAxisPrice, formatTrendTime, formatTrendValue } from './format-trend.js';
-
-import { formatCurrency } from '@/shared/lib/format';
-
-describe('formatTrendValue', () => {
-  it('should format confidence as a two-decimal percentage', () => {
-    expect(formatTrendValue(0.9833, 'confidence')).toEqual(['98.33%', 'Confidence']);
-  });
-
-  it('should format price as currency', () => {
-    expect(formatTrendValue(76_050.31, 'price')).toEqual([formatCurrency(76_050.31), 'Price']);
-  });
-
-  it('should unwrap an array value before formatting', () => {
-    expect(formatTrendValue([0.6], 'confidence')).toEqual(['60.00%', 'Confidence']);
-  });
-});
+import { formatTrendAxisPrice, formatTrendTime } from './format-trend.js';
 
 describe('formatTrendTime', () => {
   it('should render a 24-hour HH:MM tick label', () => {
