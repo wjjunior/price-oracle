@@ -4,6 +4,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { AdminModule } from './admin/admin.module.js';
 import { ConfigModule } from './config/config.module.js';
 import { type IngestorConfig } from './config/env.schema.js';
+import { HealthModule } from './health/health.module.js';
 import { MockModule } from './mock/mock.module.js';
 import { NatsModule } from './nats/nats.module.js';
 
@@ -24,6 +25,7 @@ export class AppModule {
         NatsModule,
         MockModule,
         AdminModule.register(config.adminEnabled),
+        HealthModule,
       ],
     };
   }

@@ -20,6 +20,7 @@ import { AuditLimitPipe } from './audit-limit.pipe.js';
 import { AuditController } from './audit.controller.js';
 import { DiagnoseBodyPipe } from './diagnose-body.pipe.js';
 import { DiagnoseController } from './diagnose.controller.js';
+import { HealthController } from './health.controller.js';
 import { LifecycleService } from './lifecycle.service.js';
 import { OptionalAssetParamPipe } from './optional-asset-param.pipe.js';
 import { buildOrchestratorConfig } from './orchestrator.config.js';
@@ -47,7 +48,13 @@ const sharedLogger = pino({
 @Global()
 @Module({
   imports: [LoggerModule.forRoot({ pinoHttp: { logger: sharedLogger } })],
-  controllers: [SnapshotController, AuditController, DiagnoseController, StreamController],
+  controllers: [
+    HealthController,
+    SnapshotController,
+    AuditController,
+    DiagnoseController,
+    StreamController,
+  ],
   providers: [
     AssetParamPipe,
     OptionalAssetParamPipe,
