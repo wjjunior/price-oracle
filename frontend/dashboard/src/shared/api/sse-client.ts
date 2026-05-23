@@ -2,7 +2,13 @@ import { SseEnvelopeSchema, type SseEnvelope } from '@price-oracle/contracts/sse
 
 import type { AssetId } from '@price-oracle/contracts/primitives';
 
-export type SseConnectionState = 'connecting' | 'open' | 'reconnecting' | 'closed';
+export const SseConnectionState = {
+  connecting: 'connecting',
+  open: 'open',
+  reconnecting: 'reconnecting',
+  closed: 'closed',
+} as const;
+export type SseConnectionState = (typeof SseConnectionState)[keyof typeof SseConnectionState];
 
 export type SseSubscriptionFilter = {
   type: SseEnvelope['type'];
@@ -27,7 +33,7 @@ function matches(envelope: SseEnvelope, filter: SseSubscriptionFilter): boolean 
 export function createSseClient(url: string): SseClient {
   const subscriptions = new Set<Subscription>();
   const stateListeners = new Set<(state: SseConnectionState) => void>();
-  let state: SseConnectionState = 'connecting';
+  let state: SseConnectionState = SseConnectionState.connecting;
 
   const setState = (next: SseConnectionState): void => {
     if (next === state) return;
@@ -36,9 +42,13 @@ export function createSseClient(url: string): SseClient {
   };
 
   const source = new EventSource(url);
-  source.onopen = (): void => setState('open');
+  source.onopen = (): void => setState(SseConnectionState.open);
   source.onerror = (): void =>
-    setState(source.readyState === EventSource.CLOSED ? 'closed' : 'reconnecting');
+    setState(
+      source.readyState === EventSource.CLOSED
+        ? SseConnectionState.closed
+        : SseConnectionState.reconnecting,
+    );
   source.onmessage = (event: MessageEvent<string>): void => {
     let raw: unknown;
     try {
@@ -70,7 +80,7 @@ export function createSseClient(url: string): SseClient {
     getState: (): SseConnectionState => state,
     close: (): void => {
       source.close();
-      setState('closed');
+      setState(SseConnectionState.closed);
     },
   };
 }

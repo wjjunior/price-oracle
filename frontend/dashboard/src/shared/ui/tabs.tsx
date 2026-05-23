@@ -1,0 +1,49 @@
+import { Tabs as TabsPrimitive } from 'radix-ui';
+import * as React from 'react';
+
+import type { JSX } from 'react';
+
+import { cn } from '@/shared/lib/utils';
+
+function Tabs({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.Root>): JSX.Element {
+  return (
+    <TabsPrimitive.Root data-slot="tabs" className={cn('flex flex-col gap-2', className)} {...props} />
+  );
+}
+
+function TabsList({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.List>): JSX.Element {
+  return (
+    <TabsPrimitive.List
+      data-slot="tabs-list"
+      className={cn(
+        'inline-flex w-fit items-center justify-center rounded-md bg-muted p-0.5 text-muted-foreground',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function TabsTrigger({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.Trigger>): JSX.Element {
+  return (
+    <TabsPrimitive.Trigger
+      data-slot="tabs-trigger"
+      className={cn(
+        "inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-sm border border-transparent px-2 py-1 text-xs font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export { Tabs, TabsList, TabsTrigger };

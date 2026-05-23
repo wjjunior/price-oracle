@@ -31,6 +31,9 @@ Thumbs.db
 coverage/
 .nyc_output/
 
+# Playwright MCP local browser verification artifacts
+.playwright-mcp/
+
 # Internal planning documents (not committed)
 PARALLEL_EXECUTION.md
 

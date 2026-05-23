@@ -11,12 +11,18 @@ function AssetGroup({ asset, now }: { readonly asset: AssetId; readonly now: Mil
   const sources = useSourcesByAsset(asset);
   const rows = Object.values(sources).filter((s): s is SourceState => s !== undefined);
   return (
-    <Card data-slot="source-group" data-asset={asset} className="gap-2 p-4">
-      <span className="text-xs font-medium uppercase text-muted-foreground">{asset}</span>
+    <Card data-slot="source-group" data-asset={asset} className="gap-3 py-4 px-4">
+      <span className="font-mono text-xs uppercase tracking-[0.6px] text-muted-foreground">
+        {asset.toUpperCase()}
+      </span>
       {rows.length === 0 ? (
         <span className="text-sm text-muted-foreground">No sources reporting</span>
       ) : (
-        rows.map((source) => <SourceRow key={source.source} state={source} now={now} />)
+        <div className="flex flex-col gap-1.5">
+          {rows.map((source) => (
+            <SourceRow key={source.source} state={source} now={now} />
+          ))}
+        </div>
       )}
     </Card>
   );

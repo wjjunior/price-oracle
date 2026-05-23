@@ -6,6 +6,10 @@ import type { SseEnvelope } from '@price-oracle/contracts/sse';
 
 import { applyAuditEnvelope, loadAuditEvents, seedAuditEvents } from '@/entities/audit-event';
 import {
+  applyBreakerStateEnvelope,
+  hydrateFromSnapshot as hydrateBreaker,
+} from '@/entities/breaker';
+import {
   applyAggregateEnvelope,
   hydrateFromSnapshot as hydratePrice,
   loadPriceSnapshot,
@@ -23,6 +27,7 @@ async function hydrate(signal: AbortSignal, isCancelled: () => boolean): Promise
       if (isCancelled()) return;
       hydratePrice(snapshot);
       hydrateSource(snapshot);
+      hydrateBreaker(snapshot);
     }),
     loadAuditEvents(undefined, { signal }).then((response) => {
       if (isCancelled()) return;
@@ -37,6 +42,10 @@ function routeAggregate(envelope: SseEnvelope): void {
 
 function routeSourceHealth(envelope: SseEnvelope): void {
   if (envelope.type === 'source-health') applySourceHealthEnvelope(envelope);
+}
+
+function routeBreakerState(envelope: SseEnvelope): void {
+  if (envelope.type === 'breaker-state') applyBreakerStateEnvelope(envelope);
 }
 
 function routeAudit(envelope: SseEnvelope): void {
@@ -59,6 +68,7 @@ export function useDashboardData(): { connectionState: SseConnectionState } {
     const unsubscribes = [
       client.subscribe({ type: 'aggregate' }, routeAggregate),
       client.subscribe({ type: 'source-health' }, routeSourceHealth),
+      client.subscribe({ type: 'breaker-state' }, routeBreakerState),
       client.subscribe({ type: 'audit' }, routeAudit),
       client.onStateChange(setConnectionState),
     ];

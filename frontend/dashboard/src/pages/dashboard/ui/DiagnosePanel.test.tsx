@@ -28,9 +28,9 @@ afterEach(() => vi.restoreAllMocks());
 describe('DiagnosePanel', () => {
   it('should render the empty card and a BTC/ETH toggle initially', () => {
     renderPanel();
-    expect(screen.getByText(/request a diagnosis/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'BTC' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'ETH' })).toBeInTheDocument();
+    expect(screen.getByText(/click diagnose to generate/i)).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'BTC' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'ETH' })).toBeInTheDocument();
   });
 
   it('should POST for the default btc asset when Diagnose is clicked', async () => {
@@ -48,7 +48,7 @@ describe('DiagnosePanel', () => {
   it('should POST asset=eth after toggling to ETH', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(okResponse('# Ok'));
     renderPanel();
-    fireEvent.click(screen.getByRole('button', { name: 'ETH' }));
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'ETH' }));
     fireEvent.click(screen.getByRole('button', { name: 'Diagnose' }));
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
@@ -80,8 +80,8 @@ describe('DiagnosePanel', () => {
     );
     renderPanel();
     fireEvent.click(screen.getByRole('button', { name: 'Diagnose' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'BTC' })).toBeDisabled());
-    expect(screen.getByRole('button', { name: 'ETH' })).toBeDisabled();
+    await waitFor(() => expect(screen.getByRole('tab', { name: 'BTC' })).toBeDisabled());
+    expect(screen.getByRole('tab', { name: 'ETH' })).toBeDisabled();
     resolveFetch(okResponse('# Ok'));
   });
 
