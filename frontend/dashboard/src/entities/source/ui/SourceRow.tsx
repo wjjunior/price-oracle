@@ -1,9 +1,9 @@
+import { SourceHealth, type Millis } from '@price-oracle/contracts/primitives';
 import { ActivityIcon, AlertTriangleIcon, XCircleIcon, type LucideIcon } from 'lucide-react';
 
 import { formatSourceLatency } from '../model/format-latency.js';
 
 import type { SourceState } from '@price-oracle/contracts/events';
-import type { Millis, SourceHealth } from '@price-oracle/contracts/primitives';
 import type { JSX } from 'react';
 
 import { formatCurrency } from '@/shared/lib/format';
@@ -15,15 +15,15 @@ type HealthMeta = {
 };
 
 const HEALTH_META: Record<SourceHealth, HealthMeta> = {
-  HEALTHY: {
+  [SourceHealth.enum.HEALTHY]: {
     Icon: ActivityIcon,
     className: 'bg-brand-badge-bg border-brand/50 text-brand',
   },
-  DEGRADED: {
+  [SourceHealth.enum.DEGRADED]: {
     Icon: AlertTriangleIcon,
     className: 'bg-degraded/15 border-degraded/50 text-degraded',
   },
-  STALE: {
+  [SourceHealth.enum.STALE]: {
     Icon: XCircleIcon,
     className: 'bg-stale/10 border-stale/50 text-stale',
   },

@@ -5,6 +5,7 @@ import { useDashboardData } from '../model/use-dashboard-data.js';
 import { DiagnosePanel } from './DiagnosePanel.js';
 
 import { InjectFailureDialog, useInjectFailure } from '@/features/inject-failure';
+import { SseConnectionState } from '@/shared/api/sse-client';
 import { useNow } from '@/shared/lib/use-now';
 import { ThemeToggle } from '@/shared/ui/theme-toggle';
 import { AuditTimeline } from '@/widgets/audit-timeline';
@@ -40,7 +41,9 @@ export function DashboardPage(): JSX.Element {
   const { connectionState } = useDashboardData();
   const now = useNow();
   const inject = useInjectFailure();
-  const reconnecting = connectionState === 'reconnecting' || connectionState === 'closed';
+  const reconnecting =
+    connectionState === SseConnectionState.reconnecting ||
+    connectionState === SseConnectionState.closed;
   const datetime = new Date(now).toLocaleString('en-US', DATETIME_FORMAT);
 
   return (

@@ -1,4 +1,9 @@
-export type ConfidenceLevel = 'HIGH' | 'DEGRADED' | 'UNAVAILABLE';
+export const ConfidenceLevel = {
+  HIGH: 'HIGH',
+  DEGRADED: 'DEGRADED',
+  UNAVAILABLE: 'UNAVAILABLE',
+} as const;
+export type ConfidenceLevel = (typeof ConfidenceLevel)[keyof typeof ConfidenceLevel];
 
 const JUST_NOW_MAX_SECONDS = 5;
 const UNAVAILABLE = '—';
@@ -15,8 +20,8 @@ export function formatCurrency(value: number): string {
 }
 
 export function formatPrice(value: number | null, level: ConfidenceLevel): string {
-  if (value === null || level === 'UNAVAILABLE') return UNAVAILABLE;
-  if (level === 'DEGRADED') return `~${formatCurrency(value)}`;
+  if (value === null || level === ConfidenceLevel.UNAVAILABLE) return UNAVAILABLE;
+  if (level === ConfidenceLevel.DEGRADED) return `~${formatCurrency(value)}`;
   return formatCurrency(value);
 }
 

@@ -1,10 +1,10 @@
 import { CircleCheckIcon, SparklesIcon } from 'lucide-react';
 import { lazy, Suspense, type JSX } from 'react';
 
-import type { ConfidenceLevel } from '@/shared/lib/format';
 import type { AssetId, Confidence } from '@price-oracle/contracts/primitives';
 
 import { confidenceLevel } from '@/entities/price-aggregate';
+import { ConfidenceLevel } from '@/shared/lib/format';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
@@ -16,8 +16,6 @@ const Markdown = lazy(() => import('react-markdown'));
 
 const ASSETS: readonly AssetId[] = ['btc', 'eth'];
 
-export type DiagnoseState = 'empty' | 'loading' | 'answered';
-
 type CommonProps = {
   readonly asset: AssetId;
   readonly confidence: Confidence | null;
@@ -25,7 +23,7 @@ type CommonProps = {
   readonly onRequest: () => void;
 };
 
-export type DiagnoseCardProps = CommonProps &
+type DiagnoseCardProps = CommonProps &
   (
     | { readonly state: 'empty' }
     | { readonly state: 'loading' }
@@ -33,15 +31,15 @@ export type DiagnoseCardProps = CommonProps &
   );
 
 const STATUS_LABEL: Record<ConfidenceLevel, string> = {
-  HIGH: 'HEALTHY',
-  DEGRADED: 'DEGRADED',
-  UNAVAILABLE: 'STALE',
+  [ConfidenceLevel.HIGH]: 'HEALTHY',
+  [ConfidenceLevel.DEGRADED]: 'DEGRADED',
+  [ConfidenceLevel.UNAVAILABLE]: 'STALE',
 };
 
 const STATUS_CLASS: Record<ConfidenceLevel, string> = {
-  HIGH: 'border-brand/50 bg-brand-badge-bg text-brand',
-  DEGRADED: 'border-degraded/50 bg-degraded/10 text-degraded',
-  UNAVAILABLE: 'border-stale/50 bg-stale/10 text-stale',
+  [ConfidenceLevel.HIGH]: 'border-brand/50 bg-brand-badge-bg text-brand',
+  [ConfidenceLevel.DEGRADED]: 'border-degraded/50 bg-degraded/10 text-degraded',
+  [ConfidenceLevel.UNAVAILABLE]: 'border-stale/50 bg-stale/10 text-stale',
 };
 
 function AssetTabs({
@@ -76,7 +74,7 @@ function AssetTabs({
 }
 
 function StatusBadge({ confidence }: { readonly confidence: Confidence | null }): JSX.Element {
-  const level = confidence === null ? 'UNAVAILABLE' : confidenceLevel(confidence);
+  const level = confidence === null ? ConfidenceLevel.UNAVAILABLE : confidenceLevel(confidence);
   return (
     <span
       data-slot="diagnose-status"

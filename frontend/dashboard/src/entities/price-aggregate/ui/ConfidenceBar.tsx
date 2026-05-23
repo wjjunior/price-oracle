@@ -1,16 +1,18 @@
 import { confidenceLevel } from '../model/severity.js';
 
-import type { ConfidenceLevel } from '@/shared/lib/format';
 import type { Confidence } from '@price-oracle/contracts/primitives';
 import type { JSX } from 'react';
 
+import { ConfidenceLevel } from '@/shared/lib/format';
 import { cn } from '@/shared/lib/utils';
 
 const FILL_TONE: Record<ConfidenceLevel, string> = {
-  HIGH: 'bg-brand-light shadow-[0_0_12px_color-mix(in_oklab,var(--brand-light),transparent_40%)]',
-  DEGRADED:
+  [ConfidenceLevel.HIGH]:
+    'bg-brand-light shadow-[0_0_12px_color-mix(in_oklab,var(--brand-light),transparent_40%)]',
+  [ConfidenceLevel.DEGRADED]:
     'bg-degraded shadow-[0_0_10px_color-mix(in_oklab,var(--degraded),transparent_55%)]',
-  UNAVAILABLE: 'bg-stale shadow-[0_0_10px_color-mix(in_oklab,var(--stale),transparent_55%)]',
+  [ConfidenceLevel.UNAVAILABLE]:
+    'bg-stale shadow-[0_0_10px_color-mix(in_oklab,var(--stale),transparent_55%)]',
 };
 
 export function ConfidenceBar({

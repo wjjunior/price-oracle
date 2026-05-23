@@ -3,13 +3,12 @@ import { priceSeverity } from '../model/severity.js';
 import type { AggregatePrice } from '@price-oracle/contracts/events';
 import type { JSX } from 'react';
 
-import { formatPrice, type ConfidenceLevel } from '@/shared/lib/format';
-
+import { ConfidenceLevel, formatPrice } from '@/shared/lib/format';
 
 const TONE: Record<ConfidenceLevel, string> = {
-  HIGH: 'text-foreground',
-  DEGRADED: 'text-degraded',
-  UNAVAILABLE: 'text-muted-foreground',
+  [ConfidenceLevel.HIGH]: 'text-foreground',
+  [ConfidenceLevel.DEGRADED]: 'text-degraded',
+  [ConfidenceLevel.UNAVAILABLE]: 'text-muted-foreground',
 };
 
 export function Price({ aggregate }: { readonly aggregate: AggregatePrice | null }): JSX.Element {
