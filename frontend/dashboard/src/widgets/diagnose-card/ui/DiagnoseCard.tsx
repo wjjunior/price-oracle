@@ -95,7 +95,7 @@ export function DiagnoseCard(props: DiagnoseCardProps): JSX.Element {
   const loading = props.state === 'loading';
 
   return (
-    <Card data-slot="diagnose-panel" className="gap-0 overflow-hidden py-0">
+    <Card data-slot="diagnose-panel" className="min-h-[400px] gap-0 overflow-hidden py-0">
       <div className="flex flex-col gap-2 border-b border-border px-3 pt-3 pb-3">
         <div className="flex items-center justify-between gap-2">
           <span className="font-mono text-xs uppercase tracking-[0.6px] text-muted-foreground">

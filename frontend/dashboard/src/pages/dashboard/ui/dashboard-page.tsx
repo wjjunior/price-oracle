@@ -27,9 +27,11 @@ const DATETIME_FORMAT: Intl.DateTimeFormatOptions = {
 
 function BrandMark(): JSX.Element {
   return (
-    <span aria-hidden className="flex h-8 w-5 items-center gap-1">
-      <span className="h-full w-2 rounded-sm bg-brand" />
-      <span className="h-full flex-1 rounded-sm bg-brand-light" />
+    <span aria-hidden className="flex h-9 w-5 items-center">
+      <span className="flex h-8 w-full items-center gap-1">
+        <span className="h-full w-2 rounded-sm bg-brand" />
+        <span className="h-full flex-1 rounded-sm bg-brand-light" />
+      </span>
     </span>
   );
 }
@@ -44,14 +46,14 @@ export function DashboardPage(): JSX.Element {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex max-w-[1512px] flex-col gap-4 px-4 py-6 sm:px-6">
-        <header className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-4">
-          <div className="flex items-end gap-3">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+          <div className="flex items-start gap-3">
             <BrandMark />
             <div className="flex flex-col">
               <h1 className="text-2xl font-medium leading-9 tracking-tight text-foreground">
                 Price Oracle
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm leading-5 text-muted-foreground">
                 Confidence-aware multi-source price feed — operator dashboard
               </p>
             </div>
