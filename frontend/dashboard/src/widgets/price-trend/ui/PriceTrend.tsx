@@ -118,7 +118,17 @@ function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
                 tickLine={false}
                 width={56}
               />
-              <YAxis yAxisId="confidence" domain={[0, 1]} hide />
+              <YAxis
+                yAxisId="confidence"
+                orientation="left"
+                domain={[0, 1]}
+                ticks={[0, BREAKER_CONFIDENCE_FLOOR_DEFAULT, 1]}
+                tickFormatter={(value: number) => `${Math.round(value * 100)}%`}
+                tick={{ fontSize: 10, fill: COLOR.axis }}
+                axisLine={false}
+                tickLine={false}
+                width={36}
+              />
               <ReferenceLine
                 yAxisId="confidence"
                 y={BREAKER_CONFIDENCE_FLOOR_DEFAULT}
