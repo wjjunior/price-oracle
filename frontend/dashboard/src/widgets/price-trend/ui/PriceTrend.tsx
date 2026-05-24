@@ -2,7 +2,7 @@ import { BREAKER_CONFIDENCE_FLOOR_DEFAULT } from '@price-oracle/contracts/aggreg
 import {
   ComposedChart,
   Line,
-  ReferenceLine,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -71,10 +71,10 @@ function ChartLegend(): JSX.Element {
       </span>
       <span className="flex items-center gap-1.5">
         <span
-          className="h-0 w-3 border-t-2 border-dashed"
-          style={{ borderColor: COLOR.floor }}
+          className="h-2 w-3 rounded-sm border border-dashed"
+          style={{ backgroundColor: COLOR.floor, borderColor: COLOR.floor, opacity: 0.35 }}
         />
-        Breaker floor
+        Breaker zone
       </span>
     </div>
   );
@@ -118,13 +118,26 @@ function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
                 tickLine={false}
                 width={56}
               />
-              <YAxis yAxisId="confidence" domain={[0, 1]} hide />
-              <ReferenceLine
+              <YAxis
                 yAxisId="confidence"
-                y={BREAKER_CONFIDENCE_FLOOR_DEFAULT}
+                orientation="left"
+                domain={[0, 1]}
+                ticks={[0, BREAKER_CONFIDENCE_FLOOR_DEFAULT, 1]}
+                tickFormatter={(value: number) => `${Math.round(value * 100)}%`}
+                tick={{ fontSize: 10, fill: COLOR.axis }}
+                axisLine={false}
+                tickLine={false}
+                width={36}
+              />
+              <ReferenceArea
+                yAxisId="confidence"
+                y1={0}
+                y2={BREAKER_CONFIDENCE_FLOOR_DEFAULT}
+                fill={COLOR.floor}
+                fillOpacity={0.08}
                 stroke={COLOR.floor}
+                strokeOpacity={0.45}
                 strokeDasharray="4 3"
-                strokeWidth={1.5}
               />
               <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'var(--muted-foreground)' }} />
               <Line
