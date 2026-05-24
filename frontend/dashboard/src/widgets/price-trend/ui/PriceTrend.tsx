@@ -1,3 +1,4 @@
+import { BREAKER_CONFIDENCE_FLOOR_DEFAULT } from '@price-oracle/contracts/aggregation';
 import {
   ComposedChart,
   Line,
@@ -19,8 +20,6 @@ import { formatCurrency } from '@/shared/lib/format';
 import { Card } from '@/shared/ui/card';
 
 const ASSETS: readonly AssetId[] = ['btc', 'eth'];
-
-const BREAKER_CONFIDENCE_FLOOR = 0.6;
 
 const COLOR = {
   price: 'var(--foreground)',
@@ -122,7 +121,7 @@ function AssetTrend({ asset }: { readonly asset: AssetId }): JSX.Element {
               <YAxis yAxisId="confidence" domain={[0, 1]} hide />
               <ReferenceLine
                 yAxisId="confidence"
-                y={BREAKER_CONFIDENCE_FLOOR}
+                y={BREAKER_CONFIDENCE_FLOOR_DEFAULT}
                 stroke={COLOR.floor}
                 strokeDasharray="4 3"
                 strokeWidth={1.5}
