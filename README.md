@@ -91,22 +91,6 @@ The default (`make up`) is **mock-only** (`AGGREGATOR_SOURCES=mock`): determinis
 
 Mixing mock with real sources is intended for **observing disagreement**, not steady-state demos — the mock's static anchor diverges from live spot, so the agreement factor sits lower by design.
 
-## API endpoints
-
-| Method | Service (port)    | Path                                                | Purpose                                                  |
-| ------ | ----------------- | --------------------------------------------------- | -------------------------------------------------------- |
-| `GET`  | aggregator (7402) | `/health`                                           | Liveness probe (`status`, `service`, `uptimeMs`)         |
-| `GET`  | aggregator        | `/api/snapshot?asset=btc`                           | Latest aggregate + per-source health + breaker state     |
-| `GET`  | aggregator        | `/api/audit?asset=btc`                              | Recent audit events for an asset                         |
-| `GET`  | aggregator        | `/api/stream`                                       | SSE: aggregates, source-health, breaker-state, audit     |
-| `POST` | aggregator        | `/api/diagnose`                                     | LLM-backed (or stub) narrative diagnose of current state |
-| `GET`  | mock (7401)       | `/health`                                           | Liveness probe                                           |
-| `GET`  | mock              | `/admin/status`                                     | Chaos mode per asset                                     |
-| `POST` | mock              | `/admin/:asset/disconnect\|stale\|malformed\|reset` | Inject failure (dev-only)                                |
-| `POST` | mock              | `/admin/reset-all`                                  | Reset every asset to healthy                             |
-
-Every cross-service payload is a Zod schema in `@price-oracle/contracts` (`events/`, `rest/`, `sse/`, `subjects/`, `primitives/`, `aggregation/`).
-
 ## Chaos controls
 
 | Action       | Mock behavior                               | Observable effect                                                                                                                 |
