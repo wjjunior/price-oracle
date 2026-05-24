@@ -55,5 +55,5 @@ up-docker: ## Build + run the full containerized stack (infra + every app); slow
 	@echo ""
 	@echo "Containerized stack up. Dashboard: $(DASHBOARD_URL)  |  Aggregator API: $(AGGREGATOR_URL)"
 
-down: ## Stop the local infra (NATS + MongoDB); keeps the Mongo volume
+down: ## Stop infra + any running app containers; keeps the Mongo volume
 	$(COMPOSE_FULL) down --remove-orphans
