@@ -1,0 +1,80 @@
+services:
+  aggregator:
+    build:
+      context: ..
+      dockerfile: apps/aggregator/Dockerfile
+    environment:
+      NATS_URL: nats://nats:4222
+      MONGO_URL: mongodb://mongo:27017/price_oracle
+      AGGREGATOR_SOURCES: binance,coinbase,mock
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - '127.0.0.1:7402:7402'
+    depends_on:
+      nats:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '--quiet', 'http://localhost:7402/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  ingestor-mock:
+    build:
+      context: ..
+      dockerfile: apps/ingestor-mock/Dockerfile
+    environment:
+      NATS_URL: nats://nats:4222
+      MOCK_ADMIN_ENABLED: 'true'
+    ports:
+      - '127.0.0.1:7401:7401'
+    depends_on:
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '--quiet', 'http://localhost:7401/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  ingestor-binance:
+    build:
+      context: ..
+      dockerfile: apps/ingestor-binance/Dockerfile
+    environment:
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats:
+        condition: service_healthy
+
+  ingestor-coinbase:
+    build:
+      context: ..
+      dockerfile: apps/ingestor-coinbase/Dockerfile
+    environment:
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats:
+        condition: service_healthy
+
+  dashboard:
+    build:
+      context: ..
+      dockerfile: frontend/dashboard/Dockerfile
+    ports:
+      - '127.0.0.1:5173:80'
+    depends_on:
+      aggregator:
+        condition: service_healthy
+      ingestor-mock:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '--quiet', 'http://127.0.0.1/']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
