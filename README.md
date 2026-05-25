@@ -2,6 +2,15 @@
 
 A confidence-aware multi-source price feed for Bitcoin and Ethereum, with operator-facing controls and observability.
 
+[![Claude Opus 4.7](https://img.shields.io/badge/Claude-Opus%204.7-D97757?style=flat&logo=anthropic&logoColor=white)](https://www.anthropic.com/claude)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-CLI-D97757?style=flat&logo=anthropic&logoColor=white)](https://claude.com/claude-code)
+[![Context7 MCP](https://img.shields.io/badge/Context7-MCP%20server-6C63FF?style=flat&logo=readthedocs&logoColor=white)](https://context7.com/)
+[![Figma Design](https://img.shields.io/badge/Figma-Design-F24E1E?style=flat&logo=figma&logoColor=white)](https://www.figma.com/)
+[![Figma Make](https://img.shields.io/badge/Figma%20Make-generative-A259FF?style=flat&logo=figma&logoColor=white)](https://www.figma.com/make/)
+[![Notion](https://img.shields.io/badge/Notion-System%20Design-000000?style=flat&logo=notion&logoColor=white)](https://www.notion.so/)
+[![Jira](https://img.shields.io/badge/Jira-PRO%20project-0052CC?style=flat&logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
+[![GitHub](https://img.shields.io/badge/GitHub-PRs%20%26%20issues-181717?style=flat&logo=github&logoColor=white)](https://github.com/wjjunior/price-oracle)
+
 ## Loom walkthrough
 
 [DEMO](https://www.loom.com/share/92d70a528b4d4cfca0d8a9238756f180)
