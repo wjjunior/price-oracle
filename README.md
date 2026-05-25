@@ -2,13 +2,11 @@
 
 A confidence-aware multi-source price feed for Bitcoin and Ethereum, with operator-facing controls and observability.
 
-## The problem
+## The friction
 
 Lending, derivatives, and treasury operations depend on a price that is _trustworthy right now_, not a price that was correct fifteen seconds ago. Production feeds drift, disagree, fall behind, and occasionally lie. Most systems pick one source, hope it stays healthy, and silently degrade when it doesn't.
 
-Price Oracle tackles two failure modes head-on:
-
-**Trust-aware aggregation** — Every aggregate tick carries a confidence score that combines source freshness, cross-source agreement, and coverage. Per-source state machines transition between `HEALTHY`, `DEGRADED`, `STALE`, and `OFFLINE` with hysteresis, and a per-asset circuit breaker trips when confidence stays below a floor across consecutive ticks. Anomalies fire on price drift, not on noise.
+**The Fragile Data Feed** — Every aggregate tick carries a confidence score that combines source freshness, cross-source agreement, and coverage. Per-source state machines transition between `HEALTHY`, `DEGRADED`, `STALE`, and `OFFLINE` with hysteresis, and a per-asset circuit breaker trips when confidence stays below a floor across consecutive ticks. Anomalies fire on price drift, not on noise.
 
 **Per-asset isolation** — BTC and ETH are independent throughout: NATS subjects, source state, breaker FSM, audit trail, and the dashboard. A failing Coinbase BTC stream cannot degrade ETH; a tripped breaker on one asset never silences the other.
 
@@ -84,12 +82,6 @@ make down
 Dashboard: <http://localhost:5173> · Aggregator API: <http://localhost:7402> · Mock admin: <http://localhost:7401/admin>.
 
 All env vars are documented in `.env.example` and validated by a per-app Zod config module at boot. The defaults are the demo posture; copy to `.env` to override.
-
-## Demo posture
-
-The default (`make up`) is **mock-only** (`AGGREGATOR_SOURCES=mock`): deterministic, reproducible, runnable with no secrets. Steady state shows high confidence, breaker `CLOSED`. Exercise degradation through the mock's chaos API (next section).
-
-Mixing mock with real sources is intended for **observing disagreement**, not steady-state demos — the mock's static anchor diverges from live spot, so the agreement factor sits lower by design.
 
 ## Chaos controls
 
