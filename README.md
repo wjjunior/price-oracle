@@ -2,6 +2,10 @@
 
 A confidence-aware multi-source price feed for Bitcoin and Ethereum, with operator-facing controls and observability.
 
+## Loom walkthrough
+
+[DEMO](https://www.loom.com/share/92d70a528b4d4cfca0d8a9238756f180)
+
 ## The friction
 
 Lending, derivatives, and treasury operations depend on a price that is _trustworthy right now_, not a price that was correct fifteen seconds ago. Production feeds drift, disagree, fall behind, and occasionally lie. Most systems pick one source, hope it stays healthy, and silently degrade when it doesn't.
@@ -114,7 +118,3 @@ Intentionally **not** here, with named attach points if scale demands it:
 - **Sentry** — pino `error` channel + audit log cover incidents today. Attach: pino transport mirroring `error` to Sentry.
 
 Full design rationale lives on the **Price Oracle → System Design** page in Notion.
-
-## Loom walkthrough
-
-_Link to be added once the recording is published._
