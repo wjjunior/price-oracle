@@ -1,15 +1,12 @@
+import { SourceId } from '@price-oracle/contracts/primitives';
 import fc from 'fast-check';
 
+
 import type { BreakerConfig, SourceState, Thresholds, Tick } from '../types.js';
-import type {
-  AssetId,
-  BreakerState,
-  SourceHealth,
-  SourceId,
-} from '@price-oracle/contracts/primitives';
+import type { AssetId, BreakerState, SourceHealth } from '@price-oracle/contracts/primitives';
 
 export const arbAssetId: fc.Arbitrary<AssetId> = fc.constantFrom('btc', 'eth');
-export const arbSourceId: fc.Arbitrary<SourceId> = fc.constantFrom('binance', 'coinbase', 'mock');
+export const arbSourceId: fc.Arbitrary<SourceId> = fc.constantFrom(...SourceId.options);
 export const arbSourceHealth: fc.Arbitrary<SourceHealth> = fc.constantFrom(
   'HEALTHY',
   'DEGRADED',
