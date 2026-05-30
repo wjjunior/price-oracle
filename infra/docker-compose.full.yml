@@ -6,7 +6,7 @@ services:
     environment:
       NATS_URL: nats://nats:4222
       MONGO_URL: mongodb://mongo:27017/price_oracle
-      AGGREGATOR_SOURCES: binance,coinbase,mock
+      AGGREGATOR_SOURCES: binance,coinbase,kraken,mock
       CORS_ORIGIN: http://localhost:5173
     ports:
       - '127.0.0.1:7402:7402'
@@ -55,6 +55,16 @@ services:
     build:
       context: ..
       dockerfile: apps/ingestor-coinbase/Dockerfile
+    environment:
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats:
+        condition: service_healthy
+
+  ingestor-kraken:
+    build:
+      context: ..
+      dockerfile: apps/ingestor-kraken/Dockerfile
     environment:
       NATS_URL: nats://nats:4222
     depends_on:
