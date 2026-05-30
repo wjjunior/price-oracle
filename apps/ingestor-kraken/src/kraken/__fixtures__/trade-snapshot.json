@@ -1,0 +1,24 @@
+{
+  "channel": "trade",
+  "type": "snapshot",
+  "data": [
+    {
+      "symbol": "BTC/USD",
+      "side": "buy",
+      "price": 95001.0,
+      "qty": 0.01,
+      "ord_type": "limit",
+      "trade_id": 1,
+      "timestamp": "2026-05-21T18:59:58.000000Z"
+    },
+    {
+      "symbol": "BTC/USD",
+      "side": "sell",
+      "price": 95002.0,
+      "qty": 0.02,
+      "ord_type": "limit",
+      "trade_id": 2,
+      "timestamp": "2026-05-21T18:59:59.000000Z"
+    }
+  ]
+}

@@ -37,7 +37,7 @@ describe('buildOrchestratorConfig', () => {
   });
 
   it('should reject an unknown source id', () => {
-    expect(() => buildOrchestratorConfig({ AGGREGATOR_SOURCES: 'mock,kraken' })).toThrow();
+    expect(() => buildOrchestratorConfig({ AGGREGATOR_SOURCES: 'mock,kucoin' })).toThrow();
   });
 
   it('should reject a non-positive interval', () => {

@@ -1,11 +1,13 @@
+import { SourceId } from '@price-oracle/contracts/primitives';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
 import { aggregate } from './aggregate.js';
 import { perSourceHealthScore } from './source-state.js';
 
+
 import type { SourceState, Thresholds } from './types.js';
-import type { AssetId, SourceHealth, SourceId } from '@price-oracle/contracts/primitives';
+import type { AssetId, SourceHealth } from '@price-oracle/contracts/primitives';
 
 const cfg: Thresholds = {
   freshnessDecayMs: 10_000,
@@ -15,7 +17,7 @@ const cfg: Thresholds = {
 };
 
 const healthArb = fc.constantFrom<SourceHealth>('HEALTHY', 'DEGRADED', 'STALE');
-const sourceArb = fc.constantFrom<SourceId>('binance', 'coinbase', 'mock');
+const sourceArb: fc.Arbitrary<SourceId> = fc.constantFrom(...SourceId.options);
 const priceArb = fc.double({ min: 0.01, max: 1_000_000, noNaN: true, noDefaultInfinity: true });
 const millisArb = fc.integer({ min: 0, max: 20_000 });
 const nowArb = fc.integer({ min: 0, max: 30_000 });
