@@ -1,0 +1,7 @@
+{
+  "method": "subscribe",
+  "result": { "channel": "trade", "symbol": "BTC/USD", "snapshot": true },
+  "success": true,
+  "time_in": "2026-05-21T18:59:57.000000Z",
+  "time_out": "2026-05-21T18:59:57.000100Z"
+}

@@ -1,0 +1,15 @@
+{
+  "channel": "trade",
+  "type": "update",
+  "data": [
+    {
+      "symbol": "ETH/USD",
+      "side": "sell",
+      "price": 2070.25,
+      "qty": 1.5,
+      "ord_type": "market",
+      "trade_id": 987654322,
+      "timestamp": "2026-05-21T19:00:00.123456Z"
+    }
+  ]
+}
