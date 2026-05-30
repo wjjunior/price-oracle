@@ -14,6 +14,9 @@ export const TRADE_SUBSCRIBE: SubscribeMessage = {
   params: {
     channel: 'trade',
     symbol: KRAKEN_ASSETS.map(krakenSymbol),
-    snapshot: true,
+    // No snapshot: it replays historical trades that, stamped receivedAt=now,
+    // would mask staleness and re-flood on every reconnect. Live trades on
+    // BTC/ETH arrive well within the first-tick budget without it.
+    snapshot: false,
   },
 };

@@ -134,9 +134,13 @@ describe('KrakenService.handleMessage', () => {
     });
   });
 
-  it('should publish every trade in a snapshot frame', () => {
+  it('should not publish trades from a snapshot frame', () => {
     svc.handleMessage(Buffer.from(JSON.stringify(readFixture('trade-snapshot.json'))));
-    expect(captured).toHaveLength(2);
+    expect(captured).toHaveLength(0);
+    expect(fakeLogger.debug).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'ws.snapshot.skipped' }),
+      expect.any(String),
+    );
   });
 
   it('should not publish for a subscribe acknowledgement', () => {

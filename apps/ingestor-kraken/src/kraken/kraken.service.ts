@@ -193,6 +193,14 @@ export class KrakenService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
+    if (result.data.type !== 'update') {
+      this.logger.debug(
+        { event: 'ws.snapshot.skipped', sourceId: KRAKEN_SOURCE, count: result.data.data.length },
+        'Ignoring Kraken trade snapshot',
+      );
+      return;
+    }
+
     for (const rawTrade of result.data.data) {
       this.publishTrade(rawTrade);
     }

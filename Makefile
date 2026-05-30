@@ -36,14 +36,14 @@ up: node_modules ## Start infra + core apps (mock, aggregator, dashboard) in the
 	@echo ""
 	pnpm run dev:core
 
-up-full: node_modules ## Same as 'up' plus the real binance + coinbase ingestors (needs network)
+up-full: node_modules ## Same as 'up' plus the real binance + coinbase + kraken ingestors (needs network)
 	$(COMPOSE) up -d --wait
 	@echo ""
 	@echo "Infra healthy. Dashboard: $(DASHBOARD_URL)  |  Aggregator API: $(AGGREGATOR_URL)"
 	@echo ""
 	pnpm run dev:full
 
-up-real: node_modules ## Real feeds only (binance + coinbase, no mock; needs network)
+up-real: node_modules ## Real feeds only (binance + coinbase + kraken, no mock; needs network)
 	$(COMPOSE) up -d --wait
 	@echo ""
 	@echo "Infra healthy. Dashboard: $(DASHBOARD_URL)  |  Aggregator API: $(AGGREGATOR_URL)"

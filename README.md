@@ -26,12 +26,12 @@ Lending, derivatives, and treasury operations depend on a price that is _trustwo
 ## Architecture
 
 ```
- Binance WS   Coinbase WS   Mock           NATS Core (pub/sub)
-     │             │          │           ┌─ ticks.<asset>.<source>
-     ▼             ▼          ▼           │
- ingestor-     ingestor-   ingestor-      │
-  binance       coinbase     mock ────────┘
-   (NestJS)     (NestJS)   (NestJS + chaos admin API)
+ Binance WS  Coinbase WS  Kraken WS    Mock        NATS Core (pub/sub)
+     │            │            │          │        ┌─ ticks.<asset>.<source>
+     ▼            ▼            ▼          ▼        │
+ ingestor-    ingestor-    ingestor-  ingestor-    │
+  binance      coinbase      kraken      mock ─────┘
+   (NestJS)     (NestJS)     (NestJS)  (NestJS + chaos admin API)
                                           │
                                           ▼
                                 ┌──────────────────────────────┐
@@ -55,7 +55,7 @@ Lending, derivatives, and treasury operations depend on a price that is _trustwo
 
 **Backend** (TypeScript 5.4+, Node 22 LTS, NestJS 11, NATS Core, MongoDB 7, pino).
 
-- **`ingestor-binance` / `ingestor-coinbase`** — thin protocol adapters mapping vendor WebSocket frames into `Tick` events on `ticks.<asset>.<source>`. No domain logic, no admin surface.
+- **`ingestor-binance` / `ingestor-coinbase` / `ingestor-kraken`** — thin protocol adapters mapping vendor WebSocket frames into `Tick` events on `ticks.<asset>.<source>`. No domain logic, no admin surface.
 - **`ingestor-mock`** — synthetic publisher with a per-asset chaos admin API (`/admin/:asset/disconnect|stale|malformed|reset`) gated behind `MOCK_ADMIN_ENABLED`. The only failure-injection surface.
 - **`aggregator`** — full hexagonal split. Pure domain functions run on every aggregation tick (default 500ms): source state transitions, confidence factors, weighted-median price, anomaly detection, breaker FSM. The infrastructure layer adapts NATS subscriptions, Mongo audit writes (write-fail-safe), and the Anthropic-backed `DiagnosePort` (with a deterministic stub fallback selected at composition time). The interface layer exposes REST + SSE.
 - **`frontend/dashboard`** — React 19 SPA in Feature-Sliced Design. One Zustand store per business entity, keyed by `AssetId`. Live data flows in over a single SSE stream; the diagnose response renders through `react-markdown`.
@@ -79,7 +79,7 @@ The full decision log lives in [`decisions.md`](./decisions.md). Highlights:
 # Mock-only stable demo (no network, no secrets):
 make up
 
-# Adds real Binance + Coinbase ingestors:
+# Adds real Binance + Coinbase + Kraken ingestors:
 make up-full
 
 # Real feeds only (no mock):
