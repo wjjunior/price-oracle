@@ -23,13 +23,13 @@ describe('AssetId', () => {
 });
 
 describe('SourceId', () => {
-  it('should accept binance, coinbase, and mock', () => {
-    for (const s of ['binance', 'coinbase', 'mock'] as const) {
+  it('should accept binance, coinbase, kraken, and mock', () => {
+    for (const s of ['binance', 'coinbase', 'kraken', 'mock'] as const) {
       expect(SourceId.parse(s)).toBe(s);
     }
   });
   it('should reject sources outside the configured set', () => {
-    expect(SourceId.safeParse('kraken').success).toBe(false);
+    expect(SourceId.safeParse('kucoin').success).toBe(false);
   });
 });
 

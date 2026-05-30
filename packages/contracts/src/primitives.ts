@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const AssetId = z.enum(['btc', 'eth']);
 export type AssetId = z.infer<typeof AssetId>;
 
-export const SourceId = z.enum(['binance', 'coinbase', 'mock']);
+export const SourceId = z.enum(['binance', 'coinbase', 'kraken', 'mock']);
 export type SourceId = z.infer<typeof SourceId>;
 
 export const SourceHealth = z.enum(['HEALTHY', 'DEGRADED', 'STALE']);
